@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Roda a Roda Web</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500;700;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- TELA INICIAL -->
+    <div id="start-screen" class="screen active-screen">
+        <div class="start-content">
+            <img src="https://upload.wikimedia.org/wikipedia/pt/6/64/Roda_a_Roda_Jequiti_logo.png"
+                alt="Logo Roda a Roda" class="logo-large">
+            
+            <h1 class="main-title">RODA A RODA</h1>
+            
+            <div class="menu-buttons">
+                <button id="btn-1-player" class="btn-menu">
+                    <span class="icon">👤</span> 1 JOGADOR
+                </button>
+                <button id="btn-2-players" class="btn-menu">
+                    <span class="icon">👥</span> 2 JOGADORES
+                </button>
+            </div>
+            
+            <p class="footer-note">Toque em uma opção para começar</p>
+        </div>
+    </div>
+
+    <!-- TELA DO JOGO -->
+    <div id="game-screen" class="screen hidden-screen">
+        <div class="game-container">
+            
+            <!-- Barra Superior Organizada (Mute, Infos, Sair) -->
+            <div class="top-bar">
+                <button id="btn-mute-global" class="icon-btn" title="Som">🔊</button>
+                
+                <div class="top-center-info">
+                    <div class="round-badge" id="round-display">1 / 3</div>
+                    <!-- Vidas (Apenas 1 Jogador) -->
+                    <div id="sp-lives-container" style="display: none;">
+                        <span id="sp-lives-display" class="hearts">❤️❤️❤️</span>
+                    </div>
+                </div>
+
+                <button id="btn-exit" class="icon-btn exit-btn" title="Sair">✖</button>
+            </div>
+
+            <div class="main-layout">
+                <!-- Coluna da Esquerda: Tabuleiro e Placar -->
+                <div class="game-area">
+
+                    <!-- Placar Centralizado -->
+                    <div class="score-container">
+                        <div class="players-wrapper">
+                            <div id="p1-card" class="player-card active">
+                                <div class="p-name" id="p1-name">JOGADOR 1</div>
+                                <div class="p-values">
+                                    <div class="p-round">R$ <span id="p1-round">0</span></div>
+                                    <div class="p-total">Total: <span id="p1-total">0</span></div>
+                                </div>
+                            </div>
+
+                            <div id="p2-card" class="player-card" style="display: none;">
+                                <div class="p-name" id="p2-name">JOGADOR 2</div>
+                                <div class="p-values">
+                                    <div class="p-round">R$ <span id="p2-round">0</span></div>
+                                    <div class="p-total">Total: <span id="p2-total">0</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="category-wrapper">
+                        <div class="category-display">
+                            <span class="cat-label">DICA:</span> <span id="category-text">---</span>
+                        </div>
+                    </div>
+
+                    <div id="puzzle-board" class="board">
+                        <!-- Letras via JS -->
+                    </div>
+
+                    <div class="game-footer-controls">
+                        <div class="wrong-letters-container">
+                            <span class="wl-label">Já foi:</span>
+                            <div id="wrong-letters-list"></div>
+                        </div>
+
+                        <div class="controls">
+                            <input type="text" id="letter-input" maxlength="1" placeholder="?" autocomplete="off" disabled enterkeyhint="go">
+                            <button id="btn-guess" class="action-btn" disabled>CHUTAR</button>
+                            <button id="btn-solve" class="action-btn" style="display: none;">RESPONDER</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coluna da Direita: Roleta -->
+                <div class="wheel-area">
+                    <div class="wheel-wrapper">
+                        <div class="pointer"></div>
+                        <div class="wheel" id="wheel"></div>
+                        <div class="wheel-center"></div>
+                    </div>
+                    <div class="wheel-controls">
+                        <button id="btn-spin" class="spin-button">GIRAR</button>
+                        <div id="wheel-result" class="wheel-info">Sua vez!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
