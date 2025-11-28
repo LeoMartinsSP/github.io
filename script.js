@@ -47,7 +47,6 @@ const btnMute = document.getElementById('btn-mute-global');
 
 let currentPuzzle = {}; 
 let guessedLetters = [];
-let wrongLetters = [];
 let currentRotation = 0;
 let numPlayers = 1;
 let currentPlayerIndex = 0;
@@ -70,10 +69,9 @@ const btn1Player = document.getElementById('btn-1-player');
 const btn2Players = document.getElementById('btn-2-players');
 const boardEl = document.getElementById('puzzle-board');
 const categoryEl = document.getElementById('category-text');
-const inputEl = document.getElementById('letter-input');
-const btnGuess = document.getElementById('btn-guess');
 const btnSolve = document.getElementById('btn-solve');
-const wrongLettersEl = document.getElementById('wrong-letters-list');
+const keyboardContainer = document.getElementById('keyboard-container');
+
 const roundDisplayEl = document.getElementById('round-display');
 const wheelEl = document.getElementById('wheel');
 const wheelResultEl = document.getElementById('wheel-result');
@@ -135,6 +133,21 @@ function drawWheel() {
     wheelEl.style.transform = `rotate(-${currentRotation}deg)`;
 }
 
+// === GERAÇÃO DO TECLADO ===
+function generateKeyboard() {
+    keyboardContainer.innerHTML = '';
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    alphabet.split('').forEach(letter => {
+        const btn = document.createElement('button');
+        btn.classList.add('key-btn');
+        btn.innerText = letter;
+        btn.id = `key-${letter}`;
+        btn.onclick = () => handleGuess(letter);
+        keyboardContainer.appendChild(btn);
+    });
+}
+generateKeyboard();
+
 // === LÓGICA DO SLIDER ===
 let isDraggingSlider = false;
 let sliderStartY = 0;
@@ -152,7 +165,7 @@ function initSlider() {
 }
 
 function startDrag(e) {
-    if (!sliderCanSpin || inputEl.disabled === false) return; 
+    if (!sliderCanSpin || isFinalRound) return; 
     isDraggingSlider = true;
     sliderHandle.classList.add('dragging');
     const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
@@ -194,7 +207,6 @@ function toggleMute() {
 }
 function playSound(key) { 
     if(!isMuted && audioFx[key]) {
-        // Correção de erro de Audio (Try/Catch)
         audioFx[key].play().catch(e => console.warn("Audio play blocked", e));
     }
 }
@@ -202,10 +214,6 @@ btnMute.addEventListener('click', toggleMute);
 
 btn1Player.addEventListener('click', () => prepareGame(1));
 btn2Players.addEventListener('click', () => prepareGame(2));
-
-inputEl.addEventListener('input', function() {
-    this.value = this.value.toUpperCase();
-});
 
 async function prepareGame(mode) {
     numPlayers = mode;
@@ -242,7 +250,7 @@ async function prepareGame(mode) {
     startScreen.classList.remove('active-screen'); startScreen.classList.add('hidden-screen');
     gameScreen.classList.remove('hidden-screen'); gameScreen.classList.add('active-screen');
     
-    drawWheel(); // Garante que a roleta seja desenhada
+    drawWheel(); 
     startRound();
 }
 
@@ -264,7 +272,7 @@ function generatePuzzle(forceSingle = false) {
 
 function startRound() {
     currentPuzzle = generatePuzzle(false);
-    guessedLetters = []; wrongLetters = [];
+    guessedLetters = [];
     players[0].roundScore = 0; players[1].roundScore = 0;
     spMisses = 0;
     
@@ -278,10 +286,17 @@ function startRound() {
     let msg = numPlayers === 1 ? "Sua vez!" : `Vez de ${players[currentPlayerIndex].name}.`;
     wheelResultEl.innerText = msg;
 
-    setupBoard(); updateWrongLetters();
-    disableInput(true); 
+    setupBoard();
+    resetKeyboard(); // Reseta visual do teclado
+    disableKeyboard(true); 
     sliderCanSpin = true; 
-    inputEl.value = '';
+}
+
+function resetKeyboard() {
+    const keys = document.querySelectorAll('.key-btn');
+    keys.forEach(k => {
+        k.className = 'key-btn';
+    });
 }
 
 function updateScoreUI() {
@@ -307,15 +322,15 @@ function updateLivesUI() {
     spLivesDisplay.innerText = '❤️'.repeat(livesLeft) + '💔'.repeat(spMaxMisses - livesLeft);
 }
 
-function disableInput(disabled) {
-    inputEl.disabled = disabled; btnGuess.disabled = disabled;
-    if (!disabled && window.innerWidth > 768) inputEl.focus();
+function disableKeyboard(disabled) {
+    if(disabled) keyboardContainer.classList.add('disabled-grid');
+    else keyboardContainer.classList.remove('disabled-grid');
 }
 
 function switchTurn() {
     if (numPlayers === 1) return; 
     currentPlayerIndex = currentPlayerIndex === 0 ? 1 : 0;
-    updateScoreUI(); hasSpun = false; disableInput(true); sliderCanSpin = true; roundValue = 0;
+    updateScoreUI(); hasSpun = false; disableKeyboard(true); sliderCanSpin = true; roundValue = 0;
     
     Swal.fire({
         ...swalCommon,
@@ -346,6 +361,11 @@ function revealLetters(letter) {
     const targets = document.querySelectorAll(`.letter-box.hidden[data-letter="${letter}"]`);
     if (targets.length > 0) playSound('correct');
     targets.forEach(el => { el.classList.remove('hidden'); el.classList.add('reveal'); el.innerText = letter; });
+    
+    // Atualiza o teclado visualmente se a letra foi revelada (ex: responder tudo ou rodada final)
+    const btn = document.getElementById(`key-${letter}`);
+    if (btn) btn.classList.add('correct');
+
     checkWinCondition();
 }
 
@@ -357,24 +377,9 @@ function checkEmptySlots() {
     else btnSolve.style.display = 'none';
 }
 
-function updateWrongLetters() {
-    wrongLettersEl.innerHTML = '';
-    wrongLetters.forEach((letter, index) => {
-        const span = document.createElement('span');
-        span.classList.add('wrong-letter-item');
-        span.innerText = letter;
-        wrongLettersEl.appendChild(span);
-        
-        if (index < wrongLetters.length - 1) {
-            const sep = document.createElement('span');
-            sep.classList.add('separator');
-            sep.innerText = '-';
-            wrongLettersEl.appendChild(sep);
-        }
-    });
-}
+function handleGuess(letter) {
+    if (isFinalRound) return; // Na rodada final o input é via popup
 
-function handleGuess() {
     if (!hasSpun) { 
         Swal.fire({
             ...swalCommon, title:'Puxe a alavanca!', icon:'warning',
@@ -383,41 +388,32 @@ function handleGuess() {
         }); 
         return; 
     }
-
-    let letter = inputEl.value.toUpperCase().trim();
-    if (!letter || !/[A-Z]/.test(letter)) { inputEl.focus(); return; }
     
-    if (guessedLetters.includes(letter) || wrongLetters.includes(letter)) {
-        Swal.fire({ 
-            toast:true, title:'Letra repetida', icon:'info', timer:2500, position:'bottom', 
-            showConfirmButton:false, background: '#002266', color: '#fff',
-            customClass: { popup: 'game-toast' }
-        });
-        inputEl.value = ''; return;
-    }
+    if (guessedLetters.includes(letter)) return; // Já foi
 
-    inputEl.value = ''; guessedLetters.push(letter);
+    guessedLetters.push(letter);
+    const btn = document.getElementById(`key-${letter}`);
 
     const allWordsString = currentPuzzle.words.join('');
     
     if (allWordsString.includes(letter)) {
+        if(btn) btn.classList.add('correct');
         const count = allWordsString.split(letter).length - 1;
         const earned = roundValue * count;
         players[currentPlayerIndex].roundScore += earned;
         updateScoreUI(); revealLetters(letter); checkEmptySlots();
         
-        hasSpun = false; disableInput(true); sliderCanSpin = true;
+        hasSpun = false; disableKeyboard(true); sliderCanSpin = true;
         wheelResultEl.innerText = "Acertou! Gire novamente.";
     } else {
+        if(btn) btn.classList.add('wrong');
         playSound('wrong');
-        wrongLetters.push(letter);
-        updateWrongLetters();
         
         if (numPlayers === 1) {
             spMisses++;
             updateLivesUI();
             if (spMisses >= spMaxMisses) { 
-                disableInput(true); 
+                disableKeyboard(true); 
                 sliderCanSpin = false;
                 Swal.fire({
                     ...swalCommon, icon: 'error', title: 'PERDEU!', text: 'Suas chances acabaram.',
@@ -439,7 +435,7 @@ function handleGuess() {
             customClass: { popup: 'game-toast' }
         }).then(() => {
             if (numPlayers === 2) switchTurn();
-            else { hasSpun = false; disableInput(true); sliderCanSpin = true; wheelResultEl.innerText = "Tente novamente."; }
+            else { hasSpun = false; disableKeyboard(true); sliderCanSpin = true; wheelResultEl.innerText = "Tente novamente."; }
         });
     }
 }
@@ -625,10 +621,12 @@ async function startFinalRound(winner) {
     guessedLetters = [];
     
     categoryEl.innerText = currentPuzzle.category;
-    setupBoard(); updateWrongLetters();
-    
+    setupBoard(); 
+    resetKeyboard(); // Limpa teclado para não confundir, embora não vá ser usado
+    disableKeyboard(true);
+
     sliderCanSpin = false; 
-    inputEl.style.display = 'none'; btnGuess.style.display = 'none'; btnSolve.style.display = 'none';
+    btnSolve.style.display = 'none';
     wheelResultEl.innerText = "RODADA FINAL! Valendo o Dobro!";
     
     await Swal.fire({ ...swalCommon, title: 'FINAL!', html: `Parabéns <b>${winner.name}</b>!<br>Escolha <b>4 Consoantes</b> e <b>1 Vogal</b>.` });
@@ -748,7 +746,7 @@ function triggerFinalLoss(bonus, secretWord) {
 
 function spinWheel(power = 0.5) {
     sliderCanSpin = false;
-    disableInput(true);
+    disableKeyboard(true);
     
     // Alerta de Girando - Bottom
     Swal.fire({
@@ -808,14 +806,13 @@ function calculateResult(rotation) {
             if (numPlayers === 2) switchTurn();
             else { 
                 hasSpun = false; 
-                // CORREÇÃO CRÍTICA: Removido btnSpin
                 sliderCanSpin = true; 
                 wheelResultEl.innerText = "Gire novamente."; 
             }
         });
     } else {
         roundValue = resultSlot.value;
-        hasSpun = true; disableInput(false);
+        hasSpun = true; disableKeyboard(false);
         
         // Alerta de Valor - Bottom
         Swal.fire({
@@ -823,12 +820,10 @@ function calculateResult(rotation) {
             toast: true, position: 'bottom', timer: 3000, showConfirmButton: false,
             customClass: { popup: 'game-toast' }
         });
-        wheelResultEl.innerText = `Valendo R$ ${roundValue}. Chute uma letra!`;
+        wheelResultEl.innerText = `Valendo R$ ${roundValue}. Escolha uma letra!`;
     }
 }
 
-inputEl.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleGuess(); });
-btnGuess.addEventListener('click', handleGuess);
 btnSolve.addEventListener('click', handleSolve);
 document.getElementById('btn-exit').addEventListener('click', () => {
     Swal.fire({ ...swalCommon, title: 'Sair?', showCancelButton: true, confirmButtonText: 'Sim', cancelButtonText: 'Não' })
