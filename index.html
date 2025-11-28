@@ -36,7 +36,7 @@
     <div id="game-screen" class="screen hidden-screen">
         <div class="game-container">
 
-            <!-- Barra Superior Organizada (Mute, Infos, Sair) -->
+            <!-- Barra Superior Organizada -->
             <div class="top-bar">
                 <button id="btn-mute-global" class="icon-btn" title="Som">🔊</button>
 
@@ -58,7 +58,6 @@
                     <!-- Placar Centralizado -->
                     <div class="score-container">
                         <div class="players-wrapper">
-                            <!-- (Conteúdo do placar...) -->
                             <div id="p1-card" class="player-card active">
                                 <div class="p-name" id="p1-name">JOGADOR 1</div>
                                 <div class="p-values">
@@ -87,17 +86,17 @@
                         </div>
                     </div>
 
+                    <!-- NOVA ÁREA DE CONTROLES COM TECLADO -->
                     <div class="game-footer-controls">
-                        <div class="wrong-letters-container">
-                            <span class="wl-label">Já foi:</span>
-                            <div id="wrong-letters-list"></div>
-                        </div>
-
-                        <div class="controls">
-                            <input type="text" id="letter-input" maxlength="1" placeholder="?" autocomplete="off"
-                                disabled enterkeyhint="go">
-                            <button id="btn-guess" class="action-btn" disabled>CHUTAR</button>
-                            <button id="btn-solve" class="action-btn" style="display: none;">RESPONDER</button>
+                        <div class="keyboard-wrapper">
+                            <div id="keyboard-container" class="keyboard-grid">
+                                <!-- Botões A-Z gerados via JS -->
+                            </div>
+                            
+                            <!-- Botão de Responder Lateral -->
+                            <div class="side-actions">
+                                <button id="btn-solve" class="action-btn solve-btn" style="display: none;">RESPONDER</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -110,7 +109,6 @@
                         <div class="wheel-center"></div>
                     </div>
                     
-                    <!-- NOVA ÁREA DE CONTROLE (ALAVANCA) -->
                     <div class="wheel-controls">
                         <div id="wheel-result" class="wheel-info">Sua vez!</div>
                         
@@ -131,5 +129,4 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="script.js"></script>
 </body>
-
 </html>
