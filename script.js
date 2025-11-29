@@ -1368,3 +1368,22 @@ document.getElementById('btn-exit').addEventListener('click', () => {
     Swal.fire({ ...swalCommon, title: 'Sair?', showCancelButton: true, confirmButtonText: 'Sim', cancelButtonText: 'Não' })
     .then((r) => { if (r.isConfirmed) location.reload(); });
 });
+
+// FUNÇÕES DE DEBUG
+document.getElementById('btn-debug-win').addEventListener('click', debugWinRound);
+document.getElementById('btn-debug-final').addEventListener('click', debugGoFinal);
+
+function debugWinRound() {
+    Swal.close(); // Fecha qualquer alerta aberto para evitar sobreposição
+    // Força a abertura do popup de resposta (mesmo comportamento do botão RESPONDER)
+    handleSolve(); 
+}
+
+function debugGoFinal() {
+    Swal.close(); // Fecha qualquer alerta aberto
+    currentRound = maxRounds; // Força última rodada
+    // Se quiser dar score pro P1 pra garantir que ele vá
+    if(players[0].totalScore === 0) players[0].totalScore = 1000;
+    
+    startFinalRound(players[0]);
+}
