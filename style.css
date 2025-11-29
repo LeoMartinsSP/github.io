@@ -445,7 +445,7 @@ body {
     .final-popup-container {
         display: flex !important;
         align-items: flex-end !important; 
-        padding-bottom: 50vh !important; 
+        padding-bottom: 45vh !important; 
         overflow-y: hidden !important; 
     }
     .final-popup-container .swal2-popup {
@@ -461,7 +461,7 @@ body {
     .solve-popup-container {
         display: flex !important;
         align-items: flex-end !important; 
-        padding-bottom: 50vh !important; 
+        padding-bottom: 40vh !important; 
         overflow-y: hidden !important;
     }
     .solve-popup-container .swal2-popup {
