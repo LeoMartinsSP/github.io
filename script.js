@@ -802,7 +802,8 @@ async function handleSolve() {
         confirmButtonText: 'Responder',
         cancelButtonText: 'Cancelar', 
         allowOutsideClick: false,
-        customClass: { container: 'final-popup-container', popup: 'final-popup-right compact-popup' },
+        // ADICIONADO AQUI: CLASSE 'solve-popup-container'
+        customClass: { container: 'solve-popup-container', popup: 'compact-popup' },
         didOpen: () => {
              currentPuzzle.words.forEach((_, index) => {
                  const el = document.getElementById(`solve-word-${index}`);
