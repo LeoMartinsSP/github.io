@@ -376,7 +376,7 @@ body {
         flex-grow: 0; 
         justify-content: center; 
         max-height: 35vh; 
-        margin: 25px 0 10px 0; /* Aumentado top para 25px */
+        margin: 25px 0 10px 0; 
         gap: 4px;
     }
     .word-row { gap: 3px; }
@@ -394,7 +394,7 @@ body {
         margin-bottom: 5px; 
         padding: 4px; 
         flex-shrink: 0;
-        margin-top: 20px; /* Adicionado para afastar da dica */
+        margin-top: 20px; 
     }
     
     /* Botões do teclado AUMENTADOS para idosos */
@@ -405,21 +405,28 @@ body {
     }
     .solve-btn { font-size: 0.9rem; padding: 0 15px; }
 
+    /* AJUSTE NA ÁREA DA ROLETA E TOASTS */
     .wheel-area { 
         flex: 0 0 auto; height: auto; 
-        min-height: 220px; /* Reduzido um pouco para caber o resto */
-        flex-direction: row; gap: 5px; 
-        padding: 10px 5px; 
+        min-height: 220px;
+        flex-direction: row; 
+        
+        /* ALTERADO: Centralizar e dar gap para separar slider */
+        justify-content: center; 
+        gap: 20px; 
+        /* ALTERADO: Padding esquerdo para empurrar roleta para direita */
+        padding: 10px 5px 10px 45px; 
+        
         background: rgba(0,0,0,0.5); 
         margin-top: 0;
         border-radius: 15px 15px 0 0;
-        justify-content: space-around; align-items: center;
+        align-items: center;
     }
 
-    /* REDUZIDO: Roleta diminuída para não estourar a tela ao descer */
+    /* Roleta diminuída para não estourar a tela ao descer */
     .wheel-wrapper { 
-        width: 65vw; height: 65vw; /* Reduzido de 80vw para 65vw */
-        max-width: 380px; max-height: 380px; /* Reduzido de 500px para 380px */
+        width: 65vw; height: 65vw; 
+        max-width: 380px; max-height: 380px; 
         margin-bottom: 0; 
     }
     .wheel-center { width: 18%; height: 18%; }
@@ -438,7 +445,7 @@ body {
     .final-popup-container {
         display: flex !important;
         align-items: flex-end !important; 
-        padding-bottom: 45vh !important; 
+        padding-bottom: 50vh !important; 
         overflow-y: hidden !important; 
     }
     .final-popup-container .swal2-popup {
@@ -454,13 +461,18 @@ body {
     .solve-popup-container {
         display: flex !important;
         align-items: flex-end !important; 
-        padding-bottom: 40vh !important; 
+        padding-bottom: 50vh !important; 
         overflow-y: hidden !important;
     }
     .solve-popup-container .swal2-popup {
         margin: 0 !important;
         align-self: flex-end !important;
         width: 95% !important;
+    }
+
+    /* === NOVO: SUBIR OS TOASTS COMUNS PARA CIMA DO TECLADO === */
+    .game-toast {
+        margin-bottom: 48vh !important; /* Levanta os toasts para acima do teclado */
     }
 }
 
