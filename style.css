@@ -38,8 +38,7 @@ body {
     border-radius: 20px; box-shadow: 0 0 40px rgba(0,0,0,0.8);
     border: 2px solid #ffcc00; max-width: 90%;
 }
-.logo-large { max-width: 200px; margin-bottom: 10px; }
-.main-title { font-size: 2.5rem; color: #ffcc00; text-shadow: 3px 3px #d30000; margin-bottom: 30px; }
+.main-title { font-size: 3rem; color: #ffcc00; text-shadow: 3px 3px #d30000; margin-bottom: 40px; margin-top: 10px; }
 .menu-buttons { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 300px; margin: 0 auto; }
 .btn-menu {
     padding: 20px; font-size: 1.5rem; font-weight: 900; color: white;
@@ -48,6 +47,13 @@ body {
     box-shadow: 0 6px 0 #004d1a; display: flex; align-items: center; justify-content: center; gap: 15px;
 }
 .btn-menu:active { transform: translateY(4px); box-shadow: 0 2px 0 #004d1a; }
+
+.btn-menu.bot-mode {
+    background: linear-gradient(to bottom, #6600cc, #330066);
+    box-shadow: 0 6px 0 #220044;
+}
+.btn-menu.bot-mode:active { box-shadow: 0 2px 0 #220044; }
+
 .footer-note { margin-top: 30px; color: #bbb; font-size: 1rem; }
 
 /* --- JOGO --- */
@@ -61,6 +67,7 @@ body {
     display: flex; justify-content: space-between; align-items: center;
     width: 100%; padding: 5px 10px; margin-bottom: 5px;
     background: rgba(0,0,0,0.3); border-radius: 10px; flex-shrink: 0;
+    z-index: 100;
 }
 
 .icon-btn {
@@ -70,9 +77,7 @@ body {
 }
 .exit-btn { background: rgba(200, 0, 0, 0.8); border-color: #ffcccc; }
 
-.top-center-info {
-    display: flex; align-items: center; gap: 15px;
-}
+.top-center-info { display: flex; align-items: center; gap: 15px; }
 .round-badge {
     background: #002266; color: #ffcc00; padding: 5px 15px;
     border-radius: 20px; font-weight: 900; border: 1px solid #ffcc00; font-size: 0.9rem;
@@ -83,21 +88,31 @@ body {
 .main-layout {
     display: flex; flex: 1; width: 100%; gap: 10px; overflow: hidden;
     position: relative;
+    transition: all 0.3s ease;
 }
 
-/* Área Esquerda */
+/* === LÓGICA DE BLOQUEIO VISUAL (Bot/Bloqueio) === */
+.ui-locked {
+    pointer-events: none !important; 
+}
+.ui-locked .slider-container {
+    opacity: 0.5;
+    filter: grayscale(0.8);
+    transition: opacity 0.3s;
+}
+.ui-locked .board,
+.ui-locked .wheel-area {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
 .game-area {
     flex: 6; display: flex; flex-direction: column;
-    align-items: center; 
-    padding-top: 5px; overflow-y: auto; width: 100%;
+    align-items: center; padding-top: 5px; overflow-y: auto; width: 100%;
     justify-content: flex-start;
 }
 
-/* Placar */
-.score-container { 
-    width: 100%; margin-bottom: 5px; 
-    display: flex; justify-content: center; flex-shrink: 0; 
-}
+.score-container { width: 100%; margin-bottom: 5px; display: flex; justify-content: center; flex-shrink: 0; }
 .players-wrapper { display: flex; justify-content: center; gap: 10px; width: 100%; max-width: 600px; }
 
 .player-card {
@@ -111,7 +126,6 @@ body {
 .p-round { color: #ffcc00; font-weight: bold; }
 .p-total { color: #ddd; }
 
-/* Tabuleiro */
 .board {
     display: flex; flex-direction: column; 
     align-items: center; justify-content: center; gap: 8px;
@@ -130,32 +144,21 @@ body {
 .letter-box.hidden { color: transparent; background: #ddd; }
 .letter-box.reveal { animation: flip 0.5s forwards; }
 
-/* Dica */
-.category-wrapper { 
-    width: 100%; display: flex; justify-content: center; 
-    margin-top: 5px; margin-bottom: 5px; flex-shrink: 0; 
-}
+.category-wrapper { width: 100%; display: flex; justify-content: center; margin-top: 5px; margin-bottom: 5px; flex-shrink: 0; }
 .category-display {
     background-color: #d30000; color: white; padding: 5px 25px;
     border-radius: 30px; font-weight: bold; font-size: 1.2rem;
     box-shadow: 0 3px 0 #800000; text-align: center;
 }
 
-/* === NOVA ÁREA DE CONTROLES (TECLADO) === */
 .game-footer-controls {
     width: 100%; background: rgba(0,0,0,0.3); padding: 5px;
     border-radius: 10px; margin-top: 0; flex-shrink: 0;
     max-width: 800px;
 }
 
-.keyboard-wrapper {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;
-}
-
-.keyboard-grid {
-    display: flex; flex-wrap: wrap; justify-content: center; gap: 4px;
-    flex: 1;
-}
+.keyboard-wrapper { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
+.keyboard-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; flex: 1; }
 
 .key-btn {
     width: 32px; height: 36px;
@@ -167,27 +170,11 @@ body {
     display: flex; justify-content: center; align-items: center;
 }
 .key-btn:active { transform: translateY(2px); box-shadow: none; }
+.key-btn.correct { background: #00e64d; color: #003300; box-shadow: 0 2px 0 #009933; pointer-events: none; }
+.key-btn.wrong { background: #555; color: #888; box-shadow: none; pointer-events: none; opacity: 0.6; position: relative; }
+.key-btn.wrong::after { content: ''; position: absolute; width: 80%; height: 2px; background: #ff4444; transform: rotate(45deg); }
+.key-btn.wrong::before { content: ''; position: absolute; width: 80%; height: 2px; background: #ff4444; transform: rotate(-45deg); }
 
-/* Estados das teclas */
-.key-btn.correct {
-    background: #00e64d; color: #003300; box-shadow: 0 2px 0 #009933;
-    pointer-events: none;
-}
-.key-btn.wrong {
-    background: #555; color: #888; box-shadow: none;
-    pointer-events: none; opacity: 0.6; position: relative;
-}
-/* Efeito de X visual no botão errado */
-.key-btn.wrong::after {
-    content: ''; position: absolute; width: 80%; height: 2px;
-    background: #ff4444; transform: rotate(45deg);
-}
-.key-btn.wrong::before {
-    content: ''; position: absolute; width: 80%; height: 2px;
-    background: #ff4444; transform: rotate(-45deg);
-}
-
-/* Botão Responder Lateral */
 .side-actions { display: flex; align-items: center; }
 .solve-btn {
     background-color: #00e64d; color: #003300;
@@ -197,15 +184,12 @@ body {
     white-space: nowrap;
 }
 
-/* Se teclado desabilitado (ex: hora de girar) */
-.keyboard-grid.disabled-grid {
-    opacity: 0.9;
-}
-.keyboard-grid.disabled-grid .key-btn:not(.correct):not(.wrong) {
-    background: #ccc; color: #666; cursor: not-allowed;
+/* Alterado: Teclado visualmente normal mesmo quando desabilitado */
+.keyboard-grid.disabled-grid { opacity: 1; } 
+.keyboard-grid.disabled-grid .key-btn:not(.correct):not(.wrong) { 
+    cursor: not-allowed; 
 }
 
-/* Área Direita (Roleta e Alavanca) */
 .wheel-area {
     flex: 4; display: flex; flex-direction: column; align-items: center; justify-content: center;
     background: rgba(0,0,0,0.2); border-radius: 15px; padding: 5px; position: relative;
@@ -231,11 +215,9 @@ body {
     border-left: 10px solid transparent; border-right: 10px solid transparent;
     border-top: 20px solid white; z-index: 6; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
 }
-
 .wheel-controls { width: 100%; display: flex; flex-direction: column; align-items: center; }
 .wheel-info { margin-bottom: 10px; color: #ffcc00; font-weight: bold; font-size: 0.9rem; min-height: 1.2em; text-align: center; }
 
-/* SLIDER (ALAVANCA) */
 .slider-container {
     width: 60px; height: 150px; position: relative;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -257,27 +239,15 @@ body {
 }
 .slider-handle:active { cursor: grabbing; transform: translateX(-50%) scale(1.1); }
 .slider-handle.dragging { transition: none; }
-.slider-text {
-    margin-top: 5px; font-size: 0.8rem; font-weight: bold;
-    color: #00e64d; text-shadow: 1px 1px 2px black;
-}
+.slider-text { margin-top: 5px; font-size: 0.8rem; font-weight: bold; color: #00e64d; text-shadow: 1px 1px 2px black; }
 
-/* Texto da Roleta */
 .wheel-text-container { position: absolute; width: 100%; height: 100%; pointer-events: none; }
-.wheel-text { 
-    position: absolute; left: 50%; transform: translateX(-50%); 
-    color: white; font-weight: 900; text-align: center;
-}
+.wheel-text { position: absolute; left: 50%; transform: translateX(-50%); color: white; font-weight: 900; text-align: center; }
 .wheel-text.dark-text { color: black !important; text-shadow: none !important; font-weight: 900; }
+.wheel-text.vertical-mode { top: 22px; font-size: 0.7rem; line-height: 1; max-width: 60px; } 
+.wheel-text.money-text { font-size: 1.1rem; letter-spacing: -0.5px; top: 20px; }
 
-.wheel-text.vertical-mode { 
-    top: 22px; font-size: 0.7rem; line-height: 1; max-width: 60px;
-} 
-.wheel-text.money-text { 
-    font-size: 1.1rem; letter-spacing: -0.5px; top: 20px;
-}
-
-/* === ALERTA CUSTOMIZADO === */
+/* TOASTS */
 .game-toast {
     width: auto !important; min-width: 200px; max-width: 80% !important;
     padding: 10px 20px !important; display: flex !important;
@@ -285,10 +255,29 @@ body {
     box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
     border: 1px solid rgba(255,255,255,0.2) !important;
 }
-.game-toast .swal2-title { margin: 0 !important; font-size: 1.1rem !important; text-align: center !important; width: 100%; }
+.game-toast .swal2-title { 
+    margin: 0 !important; font-size: 1.1rem !important; 
+    text-align: center !important; width: 100%;
+    color: white !important; 
+}
 .game-toast .swal2-html-container { margin: 5px 0 0 0 !important; text-align: center !important; font-size: 0.9rem !important; }
 
-/* INPUTS POPUP */
+/* Alerta Reduzido */
+.small-central-alert {
+    padding: 0.5rem !important;
+    width: auto !important;
+    min-width: 180px !important;
+    max-width: 220px !important; 
+}
+.small-central-alert .swal2-title {
+    font-size: 1.1rem !important;
+    margin-bottom: 5px !important;
+}
+.small-central-alert .swal2-icon {
+    transform: scale(0.6); 
+    margin: 0.2em auto !important;
+}
+
 .fix-swal-input-word {
     height: 2.2rem !important; font-size: 1.1rem !important; margin: 0.3rem auto !important;
     padding: 0 5px !important; text-align: center !important; text-transform: uppercase;
@@ -307,12 +296,18 @@ body {
 .compact-popup .swal2-actions { margin-top: 0.8rem !important; gap: 10px; }
 .compact-popup button { padding: 0.5rem 1rem !important; font-size: 0.9rem !important; min-height: auto !important; }
 
-/* --- MOBILE LANDSCAPE --- */
+/* === MEDIA QUERIES === */
+
+/* Horizontal (Landscape) */
 @media (max-height: 500px) and (orientation: landscape) {
     .main-layout { flex-direction: row; align-items: stretch; }
     .top-bar { padding: 2px 10px; margin-bottom: 2px; }
     .icon-btn { width: 30px; height: 30px; font-size: 1rem; }
-    .logo-large { display: none; }
+    .start-content { padding: 10px; max-width: 600px; }
+    .menu-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 500px; }
+    .btn-menu { padding: 10px; font-size: 1rem; height: auto; min-height: 50px; }
+    #btn-vs-bot { grid-column: span 2; }
+    .main-title { font-size: 1.8rem; margin-bottom: 10px; margin-top: 5px; }
 
     .game-area { flex: 1; padding: 2px; justify-content: space-between; }
     .score-container { width: 100%; transform: scale(0.95); margin-bottom: 0; flex-shrink: 0; }
@@ -320,53 +315,95 @@ body {
     .category-display { padding: 2px 15px; font-size: 1rem; }
     .board { align-content: center; gap: 3px; max-height: none; margin-bottom: 0; flex-grow: 1; overflow-y: auto; }
     .letter-box { width: 32px; height: 42px; font-size: 1.4rem; }
-    
     .game-footer-controls { padding: 2px 5px; max-width: none; flex-shrink: 0; }
-    
-    /* Ajuste fino do teclado na horizontal */
     .key-btn { width: 7.5vw; max-width: 35px; height: 30px; font-size: 0.9rem; }
     .solve-btn { font-size: 0.8rem; padding: 0 8px; }
-
-    .wheel-area { 
-        flex: 1; background: none; 
-        flex-direction: row; 
-        justify-content: center; align-items: center; 
-        padding-left: 10px; gap: 20px;
-    }
+    .wheel-area { flex: 1; background: none; flex-direction: row; justify-content: center; align-items: center; padding-left: 10px; gap: 20px; }
     .wheel-wrapper { width: 85vh; height: 85vh; max-width: none; max-height: none; margin-bottom: 0; }
     .wheel-controls { width: auto; align-items: center; } 
     .wheel-info { display: none; } 
-
     .slider-container { height: 60vh; max-height: 300px; width: 60px; }
     .slider-handle { width: 50px; height: 50px; }
-
     .wheel-text.vertical-mode { top: 14%; font-size: 2.2vh; }
     .wheel-text.money-text { font-size: 3.5vh; top: 12%; }
-
     .final-popup-container { justify-content: flex-end !important; padding-right: 20px !important; padding-left: 50% !important; align-items: center !important; }
     .final-popup-right { width: 100% !important; max-width: 95% !important; margin: 0 !important; display: flex !important; flex-direction: column !important; }
 }
 
-/* --- MOBILE PORTRAIT --- */
+/* Vertical (Portrait) */
 @media (max-width: 768px) and (orientation: portrait) {
-    .main-layout { flex-direction: column; }
-    .game-area { flex: 1; width: 100%; justify-content: flex-start; }
+    .game-container { padding: 0; height: 100vh; display: flex; flex-direction: column; }
+    
+    .top-bar { flex-shrink: 0; margin-bottom: 5px; }
+    
+    .main-layout { flex-direction: column; gap: 5px; flex-grow: 1; overflow: hidden; }
+
+    .game-area { 
+        flex: 1; width: 100%; 
+        justify-content: flex-start; 
+        overflow: hidden; padding-top: 0;
+    }
+    
+    .score-container { margin-bottom: 5px; }
+    .player-card { padding: 4px; }
+    .p-name { font-size: 0.8rem; }
+    .p-values { font-size: 0.75rem; }
+
+    .board { 
+        flex-grow: 1; justify-content: center; 
+        max-height: 35vh; margin: 5px 0; gap: 4px;
+    }
+    .word-row { gap: 3px; }
+    .letter-box { width: 11vw; height: 13vw; font-size: 1.5rem; max-width: 45px; max-height: 55px; }
+
+    .category-wrapper { margin: 5px 0; }
+    .category-display { font-size: 1rem; padding: 4px 20px; }
+
+    .game-footer-controls { margin-bottom: 5px; padding: 4px; }
+    .key-btn { width: 8.5vw; height: 10vw; font-size: 1.1rem; max-width: 40px; max-height: 45px; }
+    .solve-btn { font-size: 0.8rem; }
+
     .wheel-area { 
         flex: 0 0 auto; height: auto; 
-        flex-direction: row; gap: 15px; padding: 10px;
-        background: rgba(0,0,0,0.6); margin-top: 5px;
+        min-height: 280px; 
+        flex-direction: row; gap: 5px; 
+        padding: 10px 5px; 
+        background: rgba(0,0,0,0.5); 
+        margin-top: 0;
+        border-radius: 15px 15px 0 0;
+        justify-content: space-around; align-items: center;
     }
-    .wheel-wrapper { width: 35vw; height: 35vw; max-width: 150px; max-height: 150px; margin-bottom: 0; }
-    .wheel-controls { flex: 1; justify-content: center; }
-    .slider-container { height: 120px; width: 50px; } 
-    .slider-handle { width: 35px; height: 35px; }
-    
-    .letter-box { width: 10vw; height: 13vw; font-size: 1.6rem; }
-    
-    .key-btn { width: 8vw; height: 10vw; font-size: 1.2rem; }
-}
 
-@media (max-width: 768px) {
-    .board { gap: 4px; }
-    .word-row { gap: 3px; }
+    .wheel-wrapper { 
+        width: 72vw; height: 72vw; 
+        max-width: 340px; max-height: 340px; 
+        margin-bottom: 0; 
+    }
+    .wheel-center { width: 18%; height: 18%; }
+    
+    .wheel-text.vertical-mode { top: 22px; font-size: 0.6rem; max-width: 50px; }
+    .wheel-text.money-text { font-size: 1.1rem; top: 18px; }
+
+    .wheel-controls { flex: 0 0 auto; width: auto; }
+    .wheel-info { display: none; } 
+
+    .slider-container { width: 40px; height: 180px; margin-right: 5px; } 
+    .slider-handle { width: 35px; height: 35px; }
+    .slider-text { font-size: 0.7rem; }
+
+    /* === AJUSTE DO POPUP FINAL === */
+    .final-popup-container {
+        display: flex !important;
+        align-items: flex-end !important; /* Alinha no rodapé */
+        padding-bottom: 10vh !important; /* Sobe um pouco, mas fica baixo */
+        overflow-y: hidden !important; 
+    }
+    .final-popup-container .swal2-popup {
+        margin: 0 !important;
+        align-self: flex-end !important;
+    }
+    .final-popup-right {
+        width: 100% !important; max-width: 95% !important;
+        margin: 0 !important;
+    }
 }
