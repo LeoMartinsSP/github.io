@@ -8,6 +8,8 @@
 
 html {
     height: 100%;
+    /* Correção para altura real em navegadores mobile */
+    height: -webkit-fill-available;
     background: linear-gradient(135deg, #003399 0%, #001a4d 100%) fixed;
 }
 
@@ -15,6 +17,8 @@ body {
     background: transparent;
     color: white;
     min-height: 100vh;
+    /* Correção para altura real em navegadores mobile */
+    min-height: -webkit-fill-available;
     width: 100vw;
     overflow: hidden;
     display: flex;
@@ -890,9 +894,17 @@ body {
 
 /* Vertical (Portrait) & Tablets (Fire HD 10 included) */
 @media (max-width: 1280px) and (orientation: portrait) {
+
+    /* CORREÇÃO PRINCIPAL: Forçar o layout a começar do topo, não do centro */
+    .screen {
+        align-items: flex-start !important;
+        padding-top: 0 !important;
+    }
+
     .game-container {
         padding: 0;
-        height: 100vh;
+        /* Usamos 100% para não ultrapassar a altura visível (considerando barras do browser) */
+        height: 100%;
         display: flex;
         flex-direction: column;
     }
@@ -900,6 +912,8 @@ body {
     .top-bar {
         flex-shrink: 0;
         margin-bottom: 5px;
+        /* Pequeno ajuste para garantir que não cole no topo físico se o browser esconder a barra */
+        padding-top: 5px;
     }
 
     .main-layout {
@@ -992,7 +1006,8 @@ body {
     .wheel-area {
         flex: 0 0 auto;
         height: auto;
-        min-height: 280px;
+        /* Reduzi um pouco a min-height para garantir que o topo não seja empurrado se a tela for pequena */
+        min-height: 250px;
         flex-direction: row;
         gap: 5px;
         padding: 10px 5px;
@@ -1076,7 +1091,7 @@ body {
     .solve-popup-container {
         display: flex !important;
         align-items: flex-end !important;
-        padding-bottom: 46vh !important;
+        padding-bottom: 45vh !important;
         overflow-y: hidden !important;
     }
 
