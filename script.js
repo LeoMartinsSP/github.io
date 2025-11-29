@@ -347,7 +347,8 @@ function startRound() {
         Swal.fire({
             ...swalCommon,
             text: `${players[currentPlayerIndex].name}, é a sua vez de jogar!`,
-            timer: 2000, showConfirmButton: false, toast: true, position: 'top',
+            timer: 2000, showConfirmButton: false, toast: true, 
+            position: 'bottom', // ALTERADO PARA BOTTOM PARA O CSS FUNCIONAR E SUBIR O ALERTA
             background: '#002266', color: '#fff',
             customClass: { popup: 'game-toast' }
         });
@@ -1374,7 +1375,7 @@ document.getElementById('btn-debug-win').addEventListener('click', debugWinRound
 document.getElementById('btn-debug-final').addEventListener('click', debugGoFinal);
 
 function debugWinRound() {
-    Swal.close(); // Fecha qualquer alerta aberto para evitar sobreposição
+    Swal.close(); // Fecha qualquer alerta aberto
     // Força a abertura do popup de resposta (mesmo comportamento do botão RESPONDER)
     handleSolve(); 
 }
