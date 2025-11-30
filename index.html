@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Roda a Roda Web</title>
-    <link rel="stylesheet" href="style.css?v=21">
+    <link rel="stylesheet" href="style.css?v=23">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500;700;900&display=swap" rel="stylesheet">
 </head>
 
@@ -16,6 +16,14 @@
         <div class="start-content">
             <h1 class="main-title">RODA A RODA</h1>
 
+<div class="player-profile-container">
+    <div class="profile-label">Jogando como:</div>
+    <div class="profile-name-wrapper">
+        <span id="current-player-name">JOGADOR 1</span>
+        <button id="btn-edit-profile" class="btn-edit-icon" title="Trocar Nome">✏️</button>
+    </div>
+</div>
+
             <div class="menu-buttons">
                 <button id="btn-1-player" class="btn-menu">
                     <span class="icon">👤</span> 1 JOGADOR
@@ -25,6 +33,9 @@
                 </button>
                 <button id="btn-vs-bot" class="btn-menu bot-mode">
                     <span class="icon">🤖</span>JOGAR COM O SILVIO
+                </button>
+                 <button id="btn-ranking" class="btn-menu ranking-mode">
+                    <span class="icon">🏆</span> RANKING
                 </button>
             </div>
 
@@ -127,6 +138,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="script.js?v=22"></script>
+    <script src="script.js?v=23"></script>
 </body>
 </html>
