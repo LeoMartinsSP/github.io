@@ -320,9 +320,9 @@ body {
 }
 
 .fix-swal-input-word {
-    height: 3.5rem !important; /* Aumentado de 2.2rem para 3.5rem */
+    height: 3.0rem !important; /* Aumentado de 2.2rem para 3.5rem */
     font-size: 1.5rem !important; /* Letra maior */
-    margin: 0.5rem auto !important; /* Um pouco mais de espaço entre eles */
+    margin: 0.4rem auto !important; /* Um pouco mais de espaço entre eles */
     padding: 0 10px !important; 
     text-align: center !important; 
     text-transform: uppercase;
@@ -330,7 +330,7 @@ body {
     background: #fff !important; 
     color: #000 !important;
     border-radius: 8px !important; 
-    width: 90% !important; /* Um pouco mais largo */
+    width: 80% !important; /* Um pouco mais largo */
     box-shadow: none !important;
 }
 .fix-swal-input {
@@ -344,9 +344,9 @@ body {
 .compact-popup .swal2-html-container { margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
 .compact-popup .swal2-actions { margin-top: 0.8rem !important; gap: 10px; }
 .compact-popup button { 
-    padding: 15px 30px !important; /* Mais "gordinho" */
+    padding: 10px 25px !important; /* Mais "gordinho" */
     font-size: 1.2rem !important; /* Texto maior */
-    min-height: 55px !important; /* Altura mínima garantida */
+    min-height: 50px !important; /* Altura mínima garantida */
     border-radius: 8px !important;
 }
 
@@ -504,7 +504,7 @@ body {
     .solve-popup-container {
         display: flex !important;
         align-items: flex-end !important; 
-        padding-bottom: 38vh !important; 
+        padding-bottom: 36vh !important; 
         overflow-y: hidden !important;
     }
     .solve-popup-container .swal2-popup {
