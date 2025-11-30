@@ -1,12 +1,38 @@
 // === AUDIOS ===
+// Caminhos locais (pasta sounds/)
 const audioFx = {
-    spin: new Audio('https://raw.githubusercontent.com/manojkumar3535/wheel-of-fortune-spin/master/src/assets/audio/spin.mp3'), 
-    correct: new Audio('https://s3-us-west-2.amazonaws.com/s.cdpn.io/74196/goodbell.mp3'),
-    wrong: new Audio('https://s3-us-west-2.amazonaws.com/s.cdpn.io/74196/bad.mp3'),
-    win: new Audio('https://s3-us-west-2.amazonaws.com/s.cdpn.io/74196/win.mp3')
+    spin: new Audio('sounds/spin.mp3'), 
+    correct: new Audio('sounds/correct.mp3'),
+    wrong: new Audio('sounds/wrong.mp3'),
+    win: new Audio('sounds/win.mp3'),
+    bg: new Audio('sounds/musica.mp3'),   // Música de fundo principal
+    final: new Audio('sounds/final.mp3')  // Música da final
 };
-audioFx.spin.volume = 0.2; audioFx.spin.loop = true;
-audioFx.correct.volume = 0.3; audioFx.wrong.volume = 0.2; audioFx.win.volume = 0.3;
+
+// Configurações de Volume e Loop
+audioFx.spin.volume = 0.2; 
+audioFx.spin.loop = true;
+
+audioFx.correct.volume = 0.2; 
+audioFx.wrong.volume = 0.1; 
+audioFx.win.volume = 0.2;
+
+// Configuração das Músicas de Fundo
+audioFx.bg.volume = 0.05; // Volume bem baixo (5%)
+audioFx.bg.loop = true;   // Loop infinito
+
+audioFx.final.volume = 0.08; // Volume baixo, mas um pouco mais destacado (8%)
+audioFx.final.loop = true;
+
+// Hack para navegadores: O áudio só pode começar após uma interação do usuário.
+// Adicionamos um listener no corpo da página para iniciar a música no primeiro clique.
+let musicStarted = false;
+document.body.addEventListener('click', () => {
+    if (!musicStarted && !isMuted) {
+        audioFx.bg.play().catch(e => console.log("Aguardando interação para áudio..."));
+        musicStarted = true;
+    }
+}, { once: true }); // Executa apenas uma vez
 
 const wheelSlots = [
     { label: "PERDE<br>TUDO", value: 0, color: "#000000", type: "bankruptcy" },
@@ -32,8 +58,13 @@ const wheelSlots = [
     { label: "50", value: 50, color: "#ff0080", type: "money" }
 ];
 
-// === BANCO DE PALAVRAS (HÍBRIDO: FIXO + JSON) ===
-// 1. Lista Padrão (Fallback para Offline/Local sem servidor)
+// === UTILITÁRIOS ===
+function removeAccents(str) {
+    if (!str) return "";
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+}
+
+// === BANCO DE PALAVRAS ===
 let wordDatabase = {
     "ANIMAIS": ["ORNITORRINCO", "HIPOPOTAMO", "GIRAFA", "ELEFANTE", "CROCODILO", "GOLFINHO", "TARTARUGA", "AVESTRUZ", "CAMELO", "PINGUIM"],
     "FRUTAS": ["JABUTICABA", "ABACAXI", "LARANJA", "MELANCIA", "MORANGO", "UVA", "BANANA", "KIWI", "PESSEGO", "MARACUJA"],
@@ -44,13 +75,12 @@ let wordDatabase = {
     "ESPORTE": ["BASQUETEBOL", "FUTEBOL", "VOLEI", "NATACAO", "JUDO", "TENIS", "GOLFE", "SURFE", "BOXE", "ATLETISMO"]
 };
 
-// 2. Tenta carregar do JSON (GitHub Pages ou Servidor Local)
 async function loadWords() {
     try {
         const response = await fetch('words.json');
         if (response.ok) {
             const jsonWords = await response.json();
-            wordDatabase = jsonWords; // Sobrescreve a lista padrão com a do arquivo
+            wordDatabase = jsonWords; 
             console.log("Banco de palavras atualizado via JSON!");
         }
     } catch (error) {
@@ -59,7 +89,9 @@ async function loadWords() {
 }
 loadWords();
 
-// ORDEM DE PRIORIDADE DO BOT
+// VARIAVEIS GLOBAIS
+const STORAGE_PLAYER_KEY = 'rodaaroda_current_player_name';
+let globalPlayerName = localStorage.getItem(STORAGE_PLAYER_KEY) || "JOGADOR 1";
 const botPriorityList = ['A','E','O','S','R','N','D','M','I','U','T','C','L','P','V','G','Q','H','F','B','Z','J','X','K','W','Y'];
 
 let isMuted = false;
@@ -68,6 +100,7 @@ const btnMute = document.getElementById('btn-mute-global');
 let currentPuzzle = {}; 
 let guessedLetters = [];
 let usedWords = []; 
+let usedCategories = []; 
 let currentRotation = 0;
 let numPlayers = 1;
 let isBotGame = false; 
@@ -84,8 +117,6 @@ let isTieBreaker = false;
 let tieBreakerState = { p1Val: 0, p2Val: 0, turns: 0 };
 let finalistPlayer = null;
 let isProcessingGuess = false; 
-const STORAGE_PLAYER_KEY = 'rodaaroda_current_player_name';
-let globalPlayerName = localStorage.getItem(STORAGE_PLAYER_KEY) || "JOGADOR 1";
 
 // ELEMENTOS DOM
 const startScreen = document.getElementById('start-screen');
@@ -231,8 +262,19 @@ initSlider();
 function toggleMute() {
     isMuted = !isMuted;
     btnMute.innerText = isMuted ? '🔇' : '🔊';
-    if(isMuted) { audioFx.spin.pause(); audioFx.spin.currentTime = 0; }
+    
+    // Controle Geral de Mudo
+    if(isMuted) { 
+        audioFx.bg.pause();
+        audioFx.final.pause();
+        audioFx.spin.pause(); 
+    } else {
+        // Se desmutar, volta a tocar a música correta
+        if (isFinalRound) audioFx.final.play().catch(()=>{});
+        else audioFx.bg.play().catch(()=>{});
+    }
 }
+
 function playSound(key) { 
     if(!isMuted && audioFx[key]) {
         audioFx[key].play().catch(e => console.warn("Audio play blocked", e));
@@ -240,12 +282,15 @@ function playSound(key) {
 }
 btnMute.addEventListener('click', toggleMute);
 
+btn1Player.addEventListener('click', () => prepareGame(1));
+btn2Players.addEventListener('click', () => prepareGame(2));
+btnVsBot.addEventListener('click', () => prepareGame(3));
+
 // === GERENCIAMENTO DE PERFIL ===
 const profileNameEl = document.getElementById('current-player-name');
 const btnEditProfile = document.getElementById('btn-edit-profile');
 
 function initPlayerProfile() {
-    // Atualiza a interface com o nome salvo
     profileNameEl.innerText = globalPlayerName;
 }
 
@@ -256,12 +301,13 @@ async function editPlayerName() {
         input: 'text',
         inputValue: globalPlayerName,
         inputPlaceholder: 'Digite seu nome',
+        inputAttributes: { autocapitalize: 'characters' },
         showCancelButton: true,
         confirmButtonText: 'Salvar',
         didOpen: () => { 
             const i = Swal.getInput(); 
             i.oninput = () => i.value = i.value.toUpperCase(); 
-            i.select(); // Já vem selecionado para facilitar
+            setTimeout(() => i.focus(), 100); 
         },
         inputValidator: (value) => {
             if (!value) return 'O nome não pode ser vazio!';
@@ -269,11 +315,10 @@ async function editPlayerName() {
     });
 
     if (newName) {
-        globalPlayerName = newName.toUpperCase().substring(0, 12); // Limite de 12 chars
+        globalPlayerName = newName.toUpperCase().substring(0, 12); 
         localStorage.setItem(STORAGE_PLAYER_KEY, globalPlayerName);
         profileNameEl.innerText = globalPlayerName;
         
-        // Feedback visual
         Swal.fire({
             ...swalCommon,
             icon: 'success',
@@ -285,32 +330,33 @@ async function editPlayerName() {
     }
 }
 
-// Inicializa o perfil assim que carrega
 initPlayerProfile();
 btnEditProfile.addEventListener('click', editPlayerName);
-
-btn1Player.addEventListener('click', () => prepareGame(1));
-btn2Players.addEventListener('click', () => prepareGame(2));
-btnVsBot.addEventListener('click', () => prepareGame(3));
 
 async function prepareGame(mode) {
     numPlayers = (mode === 3) ? 2 : mode;
     isBotGame = (mode === 3);
     
-    // ALTERAÇÃO: Usa o nome global definido no menu, não pergunta mais via Swal
+    // Tenta iniciar a música se ainda não começou
+    if(!isMuted) audioFx.bg.play().catch(()=>{});
+
     let p1Name = globalPlayerName; 
     let p2Name = "JOGADOR 2";
 
     if (isBotGame) {
         p2Name = "SILVIO (BOT)";
     } else if (numPlayers === 2) {
-        // Se for 2 jogadores, pergunta apenas o nome do segundo
         const { value: name2 } = await Swal.fire({ 
             ...swalCommon, 
-            title: 'Nome do Jogador 2', // Título mais claro
+            title: 'Nome do Jogador 2',
             input: 'text', 
             inputPlaceholder: 'Nome do adversário',
-            didOpen: () => { const i = Swal.getInput(); i.oninput = () => i.value = i.value.toUpperCase(); }
+            inputAttributes: { autocapitalize: 'characters' }, 
+            didOpen: () => { 
+                const i = Swal.getInput(); 
+                i.oninput = () => i.value = i.value.toUpperCase(); 
+                setTimeout(() => i.focus(), 100); 
+            }
         });
         if (name2) p2Name = name2.toUpperCase().substring(0, 10);
     }
@@ -319,6 +365,7 @@ async function prepareGame(mode) {
     players[1] = { name: p2Name, roundScore: 0, totalScore: 0 };
     currentPlayerIndex = 0; currentRound = 1; isFinalRound = false; isTieBreaker = false;
     usedWords = [];
+    usedCategories = []; 
 
     p1NameEl.innerText = players[0].name;
     p2NameEl.innerText = players[1].name;
@@ -346,6 +393,15 @@ function generatePuzzle(forceSingle = false) {
     while (!validPuzzle && attempts < 50) {
         attempts++;
         selectedCat = categories[Math.floor(Math.random() * categories.length)];
+        
+        if (usedCategories.includes(selectedCat)) {
+            if (usedCategories.length >= categories.length) {
+                usedCategories = []; 
+            } else {
+                continue; 
+            }
+        }
+        
         let count = forceSingle ? 1 : Math.floor(Math.random() * 3) + 1;
         const pool = [...wordDatabase[selectedCat]];
         
@@ -362,7 +418,7 @@ function generatePuzzle(forceSingle = false) {
             }
 
             if (isValid) {
-                tempWords.push(word);
+                tempWords.push(removeAccents(word));
             }
             pool.splice(randomIndex, 1);
         }
@@ -370,12 +426,13 @@ function generatePuzzle(forceSingle = false) {
         if (tempWords.length > 0) {
             selectedWords = tempWords;
             validPuzzle = true;
+            usedCategories.push(selectedCat); 
         }
     }
 
     if (!validPuzzle) {
         selectedCat = categories[Math.floor(Math.random() * categories.length)];
-        selectedWords = [wordDatabase[selectedCat][0]];
+        selectedWords = [removeAccents(wordDatabase[selectedCat][0])];
     }
 
     selectedWords.forEach(w => usedWords.push(w));
@@ -387,7 +444,7 @@ function startRound() {
     guessedLetters = [];
     players[0].roundScore = 0; players[1].roundScore = 0;
     spMisses = 0;
-    isProcessingGuess = false; // Reset no início
+    isProcessingGuess = false; 
     
     if (numPlayers === 1) updateLivesUI();
 
@@ -409,12 +466,11 @@ function startRound() {
     disableKeyboard(true); 
     sliderCanSpin = true; 
 
-    // Alerta de Início de Rodada
     setTimeout(() => {
         Swal.fire({
             ...swalCommon,
             text: `${players[currentPlayerIndex].name}, é a sua vez de jogar!`,
-            timer: 2000, showConfirmButton: false, toast: true, 
+            timer: 4000, showConfirmButton: false, toast: true, 
             position: 'bottom',
             background: '#002266', color: '#fff',
             customClass: { popup: 'game-toast' }
@@ -491,8 +547,11 @@ function botCheckSuddenDeathAndAct() {
             simulateBotSolving();
         } else {
              setTimeout(() => {
+                const count = currentPuzzle.words.length;
+                const msg = count > 1 ? "Silvio não sabe quais são as palavras..." : "Silvio não sabe qual é a palavra...";
+                
                 Swal.fire({
-                    ...swalCommon, title: 'Silvio não sabe a resposta...',
+                    ...swalCommon, title: msg,
                     text: 'Ele passou a vez!',
                     timer: 2000, showConfirmButton: false,
                     toast: true, position: 'bottom', background: '#800000'
@@ -660,7 +719,7 @@ function switchTurn() {
     Swal.fire({
         ...swalCommon,
         title: `VEZ DE ${players[currentPlayerIndex].name}`,
-        timer: 2000, showConfirmButton: false, toast: true, position: 'bottom',
+        timer: 3500, showConfirmButton: false, toast: true, position: 'bottom',
         background: '#003399',
         customClass: { popup: 'game-toast' }
     }).then(() => {
@@ -710,7 +769,7 @@ function checkSuddenDeathTransition() {
             ...swalCommon, 
             icon: 'info', title: 'FALTAM POUCAS LETRAS!',
             text: 'Você deve responder a palavra agora.',
-            timer: 2500, showConfirmButton: false
+            timer: 3500, showConfirmButton: false
         }).then(() => {
             if(isBotGame && currentPlayerIndex === 1) {
                 const willSolve = Math.random() < 0.9;
@@ -727,14 +786,8 @@ function checkSuddenDeathTransition() {
 
 function handleGuess(letter) {
     if (isFinalRound) return; 
-    
-    // --- SEGURANÇA ---
     if (isProcessingGuess) return; 
-
-    // Permite jogada do bot mesmo com teclado bloqueado visualmente
-    if (!(isBotGame && currentPlayerIndex === 1) && keyboardContainer.classList.contains('disabled-grid')) {
-        return;
-    }
+    if (!(isBotGame && currentPlayerIndex === 1) && keyboardContainer.classList.contains('disabled-grid')) return;
 
     if (!hasSpun && !(isBotGame && currentPlayerIndex === 1)) { 
         Swal.fire({ ...swalCommon, title:'Puxe a alavanca!', icon:'warning', timer: 1500, showConfirmButton: false, toast: true, position: 'bottom', customClass: { popup: 'game-toast' } }); 
@@ -743,16 +796,13 @@ function handleGuess(letter) {
     
     if (guessedLetters.includes(letter)) return; 
 
-    // TRAVA IMEDIATA
     isProcessingGuess = true; 
-    disableKeyboard(true);
+    disableKeyboard(true); 
 
     guessedLetters.push(letter);
     const btn = document.getElementById(`key-${letter}`);
-
     const allWordsString = currentPuzzle.words.join('');
     
-    // === ACERTOU A LETRA ===
     if (allWordsString.includes(letter)) {
         if(btn) btn.classList.add('correct');
         const count = allWordsString.split(letter).length - 1;
@@ -761,22 +811,18 @@ function handleGuess(letter) {
         updateScoreUI(); 
         revealLetters(letter, false); 
         
-        // Toast rápido de acerto
         Swal.fire({
             ...swalCommon,
             title: `Tem ${count} letra${count > 1 ? 's' : ''} ${letter}`,
             icon: 'success',
             toast: true, position: 'bottom', 
-            timer: 2500,
+            timer: 3000, 
             showConfirmButton: false,
             customClass: { popup: 'game-toast' }
         });
 
-        // === O PULO DO GATO: REDUÇÃO DO DELAY ===
-        // Antes estava 3000 (3 segundos). Mudei para 800 (0.8 segundos).
-        // Isso dá tempo apenas da animação da letra virar e já libera a alavanca.
         setTimeout(() => {
-            isProcessingGuess = false; // Destrava
+            isProcessingGuess = false; 
             const isSudden = checkSuddenDeathTransition();
             if(!isSudden) {
                 const won = checkWinCondition();
@@ -787,15 +833,14 @@ function handleGuess(letter) {
                          botTurnRoutine(); 
                     } else {
                         disableKeyboard(true); 
-                        sliderCanSpin = true; // <--- ALAVANCA LIBERADA AQUI
+                        sliderCanSpin = true;
                         wheelResultEl.innerText = "Acertou! Gire novamente.";
                     }
                 }
             }
-        }, 800); // <--- AQUI ESTAVA 3000
+        }, 800); 
 
     } else {
-        // === ERROU A LETRA ===
         if(btn) btn.classList.add('wrong');
         playSound('wrong');
         
@@ -816,7 +861,7 @@ function handleGuess(letter) {
         Swal.fire({ 
             icon: 'error', 
             title: `Não tem "${letter}"!`, 
-            timer: 3000, // Reduzido de 3500 para 3000 (mais rápido no erro também)
+            timer: 3500, 
             showConfirmButton: false, 
             toast: true, 
             position: 'bottom', 
@@ -829,7 +874,7 @@ function handleGuess(letter) {
             else { 
                 hasSpun = false; 
                 disableKeyboard(true); 
-                sliderCanSpin = true; // Libera alavanca rápido no modo 1 jogador
+                sliderCanSpin = true; 
                 wheelResultEl.innerText = "Tente novamente."; 
                 isProcessingGuess = false; 
             }
@@ -845,7 +890,7 @@ async function handleSolve() {
         const letters = word.split('');
         const isRevealed = letters.every(l => guessedLetters.includes(l));
         const val = isRevealed ? word : '';
-        inputsHtml += `<input id="solve-word-${index}" class="swal2-input fix-swal-input-word" placeholder="PALAVRA ${index+1}" value="${val}" autocomplete="off">`;
+        inputsHtml += `<input id="solve-word-${index}" class="swal2-input fix-swal-input-word" placeholder="PALAVRA ${index+1}" value="${val}" autocomplete="off" autocapitalize="characters">`;
     });
     inputsHtml += '</div>';
 
@@ -863,6 +908,10 @@ async function handleSolve() {
                  const el = document.getElementById(`solve-word-${index}`);
                  if(el) el.oninput = () => el.value = el.value.toUpperCase();
              });
+             setTimeout(() => {
+                 const first = document.getElementById('solve-word-0');
+                 if(first) first.focus();
+             }, 100);
         },
         preConfirm: () => {
             const answers = [];
@@ -870,7 +919,7 @@ async function handleSolve() {
             currentPuzzle.words.forEach((_, index) => {
                 const val = document.getElementById(`solve-word-${index}`).value;
                 if(!val) allFilled = false;
-                answers.push(val.toUpperCase().trim());
+                answers.push(removeAccents(val.trim()));
             });
             if(!allFilled) { Swal.showValidationMessage('Preencha todas as palavras!'); return false; }
             return answers;
@@ -923,7 +972,7 @@ async function handleSolve() {
     } else {
          Swal.fire({ 
             ...swalCommon, title: 'Passou a vez!', icon: 'info',
-            timer: 2000, showConfirmButton: false, toast: true, position: 'bottom', customClass: { popup: 'game-toast' }
+            timer: 2500, showConfirmButton: false, toast: true, position: 'bottom', customClass: { popup: 'game-toast' }
         })
         .then(() => {
             if (numPlayers === 2) switchTurn();
@@ -1019,11 +1068,15 @@ function advanceRound() {
 function finishGame(win = true) {
     playSound('win');
     
-    // Identifica vencedor principal (para troféu)
+    // Restaura música normal se acabar
+    if(!isMuted) {
+        audioFx.final.pause();
+        audioFx.bg.play().catch(()=>{});
+    }
+
     let winnerIndex = 0;
     if (numPlayers === 2 && players[1].totalScore > players[0].totalScore) winnerIndex = 1;
 
-    // --- RANKING SAVING ---
     if (numPlayers === 1) {
         updatePlayerStats(players[0].name, players[0].totalScore, win);
     } else {
@@ -1038,10 +1091,9 @@ function finishGame(win = true) {
         return;
     }
 
-    // Constrói HTML da lista de jogadores
     let htmlContent = '<div style="text-align:left; margin-top:10px; display:inline-block;">';
     players.forEach((p, idx) => {
-        if(numPlayers === 1 && idx === 1) return; // Pula P2 se for 1 jogador
+        if(numPlayers === 1 && idx === 1) return;
         
         const isWinner = (idx === winnerIndex);
         const style = isWinner ? 'color:#00ff00; font-weight:bold;' : 'color:white;';
@@ -1067,6 +1119,13 @@ async function startFinalRound(winner) {
     isFinalRound = true; isTieBreaker = false; finalistPlayer = winner;
     currentPlayerIndex = (winner === players[0]) ? 0 : 1;
     
+    // Troca a música para a final
+    if(!isMuted) {
+        audioFx.bg.pause();
+        audioFx.bg.currentTime = 0;
+        audioFx.final.play().catch(()=>{});
+    }
+
     updateScoreUI();
     p2Card.style.display = 'none'; p1Card.style.display = 'none'; spLivesContainer.style.display = 'none';
     
@@ -1100,7 +1159,6 @@ async function startFinalRound(winner) {
     }
 }
 
-// === LÓGICA DO BOT PARA PREENCHER POPUP DE LETRAS ===
 function simulateBotFinalLetterSelection() {
     Swal.fire({
         ...swalCommon,
@@ -1193,7 +1251,7 @@ function botFinalGuessLogic() {
             ...swalCommon, 
             title: 'O SILVIO NÃO SABE!', 
             text: "Ele não conseguiu adivinhar a palavra.", 
-            timer: 3000, 
+            timer: 3500, 
             showConfirmButton: false,
             background: '#800000'
         }).then(() => {
@@ -1211,26 +1269,49 @@ async function promptFinalLetters() {
         html: `
             <div style="font-size:0.9rem; margin-bottom:5px">4 Consoantes + 1 Vogal:</div>
             <div class="final-inputs-wrapper" style="display:flex; justify-content:center; gap:5px;">
-                <input id="c1" class="swal2-input fix-swal-input" maxlength="1" style="text-transform:uppercase;">
-                <input id="c2" class="swal2-input fix-swal-input" maxlength="1" style="text-transform:uppercase;">
-                <input id="c3" class="swal2-input fix-swal-input" maxlength="1" style="text-transform:uppercase;">
-                <input id="c4" class="swal2-input fix-swal-input" maxlength="1" style="text-transform:uppercase;">
+                <input id="c1" class="swal2-input fix-swal-input" maxlength="1" style="text-transform:uppercase;" autocapitalize="characters">
+                <input id="c2" class="swal2-input fix-swal-input" maxlength="1" style="text-transform:uppercase;" autocapitalize="characters">
+                <input id="c3" class="swal2-input fix-swal-input" maxlength="1" style="text-transform:uppercase;" autocapitalize="characters">
+                <input id="c4" class="swal2-input fix-swal-input" maxlength="1" style="text-transform:uppercase;" autocapitalize="characters">
                 <span style="align-self:center; font-weight:bold">-</span>
-                <input id="v1" class="swal2-input fix-swal-input" maxlength="1" style="text-transform:uppercase;">
+                <input id="v1" class="swal2-input fix-swal-input" maxlength="1" style="text-transform:uppercase;" autocapitalize="characters">
             </div>
         `,
         backdrop: false,
         customClass: { container: 'final-popup-container', popup: 'final-popup-right' },
         didOpen: () => {
-            const inputs = document.querySelectorAll('.fix-swal-input');
-            inputs.forEach(input => { input.oninput = () => input.value = input.value.toUpperCase(); });
+            const inputs = ['c1','c2','c3','c4','v1'];
+            // Lógica de Validação e Auto-Tab
+            inputs.forEach((id, index) => {
+                const el = document.getElementById(id);
+                el.addEventListener('input', (e) => {
+                    let val = e.target.value.toUpperCase();
+                    const isVowel = (id === 'v1');
+                    
+                    const pattern = isVowel ? /[AEIOU]/ : /[B-DF-HJ-NP-TV-Z]/;
+                    
+                    if(!pattern.test(val)) {
+                        e.target.value = ''; 
+                        return;
+                    }
+                    
+                    e.target.value = val;
+                    if(val.length === 1 && index < inputs.length - 1) {
+                         document.getElementById(inputs[index+1]).focus();
+                    }
+                });
+            });
+
+            setTimeout(() => {
+                document.getElementById('c1').focus();
+            }, 100);
         },
         preConfirm: () => {
             const inputs = ['c1','c2','c3','c4','v1'].map(id => document.getElementById(id).value.toUpperCase());
             const [c1, c2, c3, c4, v1] = inputs;
             const consonants = [c1, c2, c3, c4];
-            if (consonants.some(c => !c || !/[B-DF-HJ-NP-TV-Z]/.test(c))) { Swal.showValidationMessage('4 Consoantes inválidas'); return false; }
-            if (!v1 || !/[AEIOU]/.test(v1)) { Swal.showValidationMessage('1 Vogal inválida'); return false; }
+            if (consonants.some(c => !c)) { Swal.showValidationMessage('Preencha as Consoantes'); return false; }
+            if (!v1) { Swal.showValidationMessage('Preencha a Vogal'); return false; }
             const all = [...consonants, v1];
             if (new Set(all).size !== all.length) { Swal.showValidationMessage('Não repita letras'); return false; }
             return all;
@@ -1260,13 +1341,21 @@ async function promptFinalAnswer() {
         ...swalCommon, 
         title: 'QUAL A PALAVRA?', input: 'text', inputPlaceholder: 'Digite a resposta', 
         backdrop: false, showDenyButton: true, denyButtonText: 'Não sei',
+        // Adicionado autocapitalize
+        inputAttributes: { autocapitalize: 'characters' },
         customClass: { container: 'final-popup-container', popup: 'final-popup-right compact-popup' },
-        didOpen: () => { const input = Swal.getInput(); input.oninput = () => input.value = input.value.toUpperCase(); },
+        didOpen: () => { 
+            const input = Swal.getInput(); 
+            input.oninput = () => input.value = input.value.toUpperCase(); 
+            // Foco automático
+            setTimeout(() => input.focus(), 100);
+        },
         inputValidator: (value) => { if (!value) return 'Escreva algo!'; }
     });
 
     if (result.isConfirmed) {
-        const userGuess = result.value.toUpperCase().trim().replace(/\s+/g, '');
+        // NORMALIZA O INPUT DO USUARIO (REMOVE ACENTOS E Ç)
+        const userGuess = removeAccents(result.value.trim().replace(/\s+/g, ''));
         const secretWord = currentPuzzle.words.join('').toUpperCase();
         if (userGuess === secretWord) finalWinEffects(secretWord);
         else {
@@ -1292,6 +1381,13 @@ function finalWinEffects(secretWord) {
     const revealed = document.querySelectorAll('.letter-box.reveal').length;
     const bonus = revealed * 1000;
     playSound('win');
+    
+    // Volta música normal
+    if(!isMuted) {
+        audioFx.final.pause();
+        audioFx.bg.play().catch(()=>{});
+    }
+
     const finalPrize = (finalistPlayer.totalScore * 2) + bonus;
 
     // --- RANKING SAVING ---
@@ -1314,6 +1410,12 @@ function triggerFinalLoss(bonus, secretWord) {
          targets.forEach(el => { el.classList.remove('hidden'); el.innerText = l; });
     });
 
+    // Volta música normal
+    if(!isMuted) {
+        audioFx.final.pause();
+        audioFx.bg.play().catch(()=>{});
+    }
+
     // --- RANKING SAVING ---
     const consolationPrize = finalistPlayer.totalScore + bonus;
     updatePlayerStats(finalistPlayer.name, consolationPrize, false);
@@ -1323,8 +1425,16 @@ function triggerFinalLoss(bonus, secretWord) {
         if(loser) updatePlayerStats(loser.name, loser.totalScore, false);
     }
 
+    // EXIBINDO O TOTAL
     Swal.fire({
-        ...swalCommon, title: 'QUE PENA!', icon: 'error', html: `A palavra era: <b>${secretWord}</b><br>Bônus das letras: R$ ${bonus.toLocaleString('pt-BR')}`, confirmButtonText: 'Jogar Novamente', background: '#800000'
+        ...swalCommon, 
+        title: 'QUE PENA!', 
+        icon: 'error', 
+        html: `A palavra era: <b>${secretWord}</b><br>
+               Bônus das letras: R$ ${bonus.toLocaleString('pt-BR')}<br>
+               <h3 style="margin-top:5px; color:#ffcc00">Total Ganho: R$ ${consolationPrize.toLocaleString('pt-BR')}</h3>`, 
+        confirmButtonText: 'Jogar Novamente', 
+        background: '#800000'
     }).then(() => location.reload());
 }
 
@@ -1389,7 +1499,7 @@ function calculateResult(rotation) {
             ...swalCommon, 
             icon: 'error', 
             title: alertTitle, 
-            timer: 2500, 
+            timer: 3000, 
             showConfirmButton: false, 
             position: 'center',
             toast: false, 
@@ -1420,7 +1530,7 @@ function calculateResult(rotation) {
                     ...swalCommon, title: `Valendo R$ ${roundValue}`,
                     text: 'Faltam poucas letras! Responda agora.',
                     icon: 'warning',
-                    timer: 2500, showConfirmButton: false
+                    timer: 3500, showConfirmButton: false
                 }).then(() => {
                     handleSolve();
                 });
@@ -1429,7 +1539,7 @@ function calculateResult(rotation) {
                 toggleInputLock(false); 
                 Swal.fire({
                     ...swalCommon, title: `Valendo R$ ${roundValue}`, text: 'Escolha uma letra!',
-                    toast: true, position: 'bottom', timer: 3000, showConfirmButton: false,
+                    toast: true, position: 'bottom', timer: 3500, showConfirmButton: false,
                     customClass: { popup: 'game-toast' }
                 });
                 wheelResultEl.innerText = `Valendo R$ ${roundValue}. Escolha uma letra!`;
