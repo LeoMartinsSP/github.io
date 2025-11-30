@@ -58,6 +58,36 @@ body {
 }
 .btn-menu.bot-mode:active { box-shadow: 0 2px 0 #220044; }
 
+.btn-menu.ranking-mode {
+    background: linear-gradient(to bottom, #e6b800, #997a00);
+    box-shadow: 0 6px 0 #665200;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+.btn-menu.ranking-mode:active { box-shadow: 0 2px 0 #665200; }
+
+/* Tabela de Ranking dentro do SweetAlert */
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #333;
+}
+.ranking-table th {
+    background: #003399;
+    color: white;
+    padding: 8px;
+    text-align: left;
+}
+.ranking-table td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+.ranking-table tr:nth-child(even) { background-color: #f2f2f2; }
+.ranking-table tr:first-child td { font-weight: bold; color: #d30000; } /* Destaca o líder */
+
 .footer-note { margin-top: 30px; color: #bbb; font-size: 1rem; }
 
 /* --- JOGO --- */
@@ -439,7 +469,7 @@ body {
     .final-popup-container {
         display: flex !important;
         align-items: flex-end !important; 
-        padding-bottom: 45vh !important; 
+        padding-bottom: 42vh !important; 
         overflow-y: hidden !important; 
     }
     .final-popup-container .swal2-popup {
@@ -454,7 +484,7 @@ body {
     .solve-popup-container {
         display: flex !important;
         align-items: flex-end !important; 
-        padding-bottom: 39vh !important; 
+        padding-bottom: 38vh !important; 
         overflow-y: hidden !important;
     }
     .solve-popup-container .swal2-popup {
@@ -497,4 +527,57 @@ body {
 .debug-btn:active {
     transform: translateY(2px);
     opacity: 1;
+}
+
+.player-profile-container {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid #004d1a;
+    border-radius: 10px;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    display: inline-block;
+    min-width: 250px;
+}
+
+.profile-label {
+    font-size: 0.8rem;
+    color: #bbb;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.profile-name-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+#current-player-name {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #ffcc00; /* Dourado */
+    text-shadow: 1px 1px 2px black;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-edit-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: transform 0.2s;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+}
+
+.btn-edit-icon:hover {
+    transform: scale(1.2) rotate(10deg);
+}
+
+.btn-edit-icon:active {
+    transform: scale(0.9);
 }
