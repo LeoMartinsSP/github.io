@@ -1321,26 +1321,28 @@ async function promptFinalLetters() {
 }
 
 function revealFinalLetters(chosenLetters) {
-    let delay = 800;
+    // Aumentado de 800 para 1500 (1.5 segundos) para ser mais devagar
+    let delay = 1800; 
+    
     chosenLetters.forEach((letter, index) => {
         setTimeout(() => {
             const allText = currentPuzzle.words.join('');
             
-            // Verifica se a letra existe na frase
             if (allText.includes(letter)) {
                 if(!guessedLetters.includes(letter)) { 
                     guessedLetters.push(letter); 
-                    revealLetters(letter, false); // Isso já marca o botão VERDE (correct)
+                    revealLetters(letter, false); // Essa função já toca o som de acerto
                 }
             } else {
-                // --- NOVO: SE NÃO TEM A LETRA, MARCA COMO ERRADO NO TECLADO ---
+                // Marca no teclado e toca som de erro
                 const btn = document.getElementById(`key-${letter}`);
                 if (btn) btn.classList.add('wrong');
+                playSound('wrong'); // <--- Som de erro adicionado aqui
             }
-            
         }, delay * (index + 1));
     });
     
+    // Se for jogador humano, espera o tempo das letras + um pouco antes de abrir o popup
     if(!(isBotGame && currentPlayerIndex === 1)) {
         setTimeout(() => { promptFinalAnswer(); }, delay * (chosenLetters.length + 2));
     }
