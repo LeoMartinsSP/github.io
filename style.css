@@ -336,12 +336,10 @@ body {
 
 /* Vertical (Portrait) & Tablets (Fire HD 10 included) */
 @media (max-width: 1280px) and (orientation: portrait) {
-    /* CORREÇÃO DO MENU INICIAL PARA FICAR NO CENTRO */
     #start-screen {
         align-items: center !important;
     }
 
-    /* O jogo continua começando do topo */
     #game-screen {
         align-items: flex-start !important;
         padding-top: 0 !important;
@@ -358,6 +356,9 @@ body {
         padding-top: 5px; 
     }
     
+    /* ALTERADO: Aumento da fonte do topo */
+    .round-badge { font-size: 1.2rem; }
+    
     .main-layout { flex-direction: column; gap: 5px; flex-grow: 1; overflow: hidden; }
 
     .game-area { 
@@ -368,10 +369,11 @@ body {
     
     .score-container { margin-bottom: 5px; }
     .player-card { padding: 4px; }
-    .p-name { font-size: 0.8rem; }
-    .p-values { font-size: 0.75rem; }
+    
+    /* ALTERADO: Aumento das fontes do placar */
+    .p-name { font-size: 1.1rem; }
+    .p-values { font-size: 0.95rem; }
 
-    /* AUMENTADO: Espaço superior do tabuleiro */
     .board { 
         flex-grow: 0; 
         justify-content: center; 
@@ -387,9 +389,9 @@ body {
     }
 
     .category-wrapper { margin: 5px 0; margin-bottom: auto; }
-    .category-display { font-size: 1rem; padding: 4px 20px; }
+    /* ALTERADO: Aumento da fonte da dica */
+    .category-display { font-size: 1.3rem; padding: 4px 20px; }
 
-    /* AUMENTADO: Espaço para empurrar o teclado para baixo */
     .game-footer-controls { 
         margin-bottom: 5px; 
         padding: 4px; 
@@ -397,7 +399,6 @@ body {
         margin-top: 20px; 
     }
     
-    /* Botões do teclado AUMENTADOS para idosos */
     .key-btn { 
         width: 10vw; height: 12vw; 
         font-size: 1.4rem;
@@ -405,25 +406,19 @@ body {
     }
     .solve-btn { font-size: 0.9rem; padding: 0 15px; }
 
-    /* AJUSTE NA ÁREA DA ROLETA E TOASTS */
     .wheel-area { 
         flex: 0 0 auto; height: auto; 
         min-height: 220px;
         flex-direction: row; 
-        
-        /* ALTERADO: Centralizar e dar gap para separar slider */
         justify-content: center; 
         gap: 20px; 
-        /* ALTERADO: Padding esquerdo para empurrar roleta para direita */
         padding: 10px 5px 10px 45px; 
-        
         background: rgba(0,0,0,0.5); 
         margin-top: 0;
         border-radius: 15px 15px 0 0;
         align-items: center;
     }
 
-    /* Roleta diminuída para não estourar a tela ao descer */
     .wheel-wrapper { 
         width: 65vw; height: 65vw; 
         max-width: 380px; max-height: 380px; 
@@ -441,7 +436,6 @@ body {
     .slider-handle { width: 40px; height: 40px; }
     .slider-text { font-size: 0.8rem; }
 
-    /* === AJUSTE DO POPUP FINAL === */
     .final-popup-container {
         display: flex !important;
         align-items: flex-end !important; 
@@ -457,7 +451,6 @@ body {
         margin: 0 !important;
     }
 
-    /* === CLASSE NOVA PARA O POPUP DE RESPONDER (SOLVE) === */
     .solve-popup-container {
         display: flex !important;
         align-items: flex-end !important; 
@@ -470,10 +463,13 @@ body {
         width: 95% !important;
     }
 
-    /* === NOVO: SUBIR OS TOASTS COMUNS PARA CIMA DO TECLADO === */
     .game-toast {
-        margin-bottom: 48vh !important; /* Levanta os toasts para acima do teclado */
+        margin-bottom: 49vh !important; 
     }
+    
+    /* ALTERADO: Aumento da fonte dos Toasts */
+    .game-toast .swal2-title { font-size: 1.5rem !important; }
+    .game-toast .swal2-html-container { font-size: 1.2rem !important; }
 }
 
 /* === ESTILO TEMPORÁRIO DE DEBUG === */
