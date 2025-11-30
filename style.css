@@ -320,10 +320,18 @@ body {
 }
 
 .fix-swal-input-word {
-    height: 2.2rem !important; font-size: 1.1rem !important; margin: 0.3rem auto !important;
-    padding: 0 5px !important; text-align: center !important; text-transform: uppercase;
-    border: 2px solid #555 !important; background: #fff !important; color: #000 !important;
-    border-radius: 5px !important; width: 80% !important; box-shadow: none !important;
+    height: 3.5rem !important; /* Aumentado de 2.2rem para 3.5rem */
+    font-size: 1.5rem !important; /* Letra maior */
+    margin: 0.5rem auto !important; /* Um pouco mais de espaço entre eles */
+    padding: 0 10px !important; 
+    text-align: center !important; 
+    text-transform: uppercase;
+    border: 2px solid #555 !important; 
+    background: #fff !important; 
+    color: #000 !important;
+    border-radius: 8px !important; 
+    width: 90% !important; /* Um pouco mais largo */
+    box-shadow: none !important;
 }
 .fix-swal-input {
     width: 40px !important; height: 45px !important; line-height: 45px !important;
@@ -335,7 +343,12 @@ body {
 .compact-popup .swal2-title { font-size: 1.3rem !important; margin: 0 0 0.5rem 0 !important; padding: 0 !important; }
 .compact-popup .swal2-html-container { margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
 .compact-popup .swal2-actions { margin-top: 0.8rem !important; gap: 10px; }
-.compact-popup button { padding: 0.5rem 1rem !important; font-size: 0.9rem !important; min-height: auto !important; }
+.compact-popup button { 
+    padding: 15px 30px !important; /* Mais "gordinho" */
+    font-size: 1.2rem !important; /* Texto maior */
+    min-height: 55px !important; /* Altura mínima garantida */
+    border-radius: 8px !important;
+}
 
 /* === MEDIA QUERIES === */
 
