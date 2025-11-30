@@ -385,6 +385,7 @@ function generatePuzzle(forceSingle = false) {
         attempts++;
         selectedCat = categories[Math.floor(Math.random() * categories.length)];
         
+        // Verifica se a categoria já foi usada na partida
         if (usedCategories.includes(selectedCat)) {
             if (usedCategories.length >= categories.length) {
                 usedCategories = []; 
@@ -394,7 +395,33 @@ function generatePuzzle(forceSingle = false) {
         }
         
         let count = forceSingle ? 1 : Math.floor(Math.random() * 3) + 1;
-        const pool = [...wordDatabase[selectedCat]];
+        // Importante: Usamos 'let' para poder filtrar o pool se necessário
+        let pool = [...wordDatabase[selectedCat]];
+        
+        // --- NOVA REGRA: VALIDAR TAMANHO MÍNIMO PARA RODADA DE PALAVRA ÚNICA ---
+        if (count === 1) {
+            // Filtra o pool para deixar apenas palavras válidas
+            const validCandidates = pool.filter(w => {
+                const cleanWord = removeAccents(w);
+                const isUnused = !usedWords.includes(w);
+                
+                // Regras de tamanho:
+                // Se for Final: > 6 letras (regra antiga mantida)
+                // Se for Normal: >= 5 letras (nova regra)
+                const isLengthOk = isFinalRound ? cleanWord.length > 6 : cleanWord.length >= 5;
+
+                return isUnused && isLengthOk;
+            });
+
+            // Se essa categoria não tem nenhuma palavra que atenda aos requisitos
+            if (validCandidates.length === 0) {
+                continue; // Pula essa categoria e sorteia outra
+            }
+
+            // Atualiza o pool para sortear apenas entre as candidatas válidas
+            pool = validCandidates;
+        }
+        // -----------------------------------------------------------------------
         
         let tempWords = [];
         for(let i=0; i<count; i++) {
@@ -404,8 +431,9 @@ function generatePuzzle(forceSingle = false) {
             
             let isValid = !usedWords.includes(word);
             
+            // Verificação extra de segurança (caso seja rodada multipla)
             if (isFinalRound) {
-                if (word.length <= 6) isValid = false;
+                if (removeAccents(word).length <= 6) isValid = false;
             }
 
             if (isValid) {
@@ -422,6 +450,7 @@ function generatePuzzle(forceSingle = false) {
     }
 
     if (!validPuzzle) {
+        // Fallback de emergência
         selectedCat = categories[Math.floor(Math.random() * categories.length)];
         selectedWords = [removeAccents(wordDatabase[selectedCat][0])];
     }
