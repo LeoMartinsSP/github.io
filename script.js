@@ -1673,3 +1673,40 @@ window.resetRanking = function() {
 };
 
 document.getElementById('btn-ranking').addEventListener('click', showRankingScreen);
+
+// NOVO: Lógica do botão Fechar
+document.getElementById('btn-close-game').addEventListener('click', () => {
+    Swal.fire({
+        ...swalCommon,
+        title: 'Fechar o Jogo?',
+        text: 'Deseja sair e fechar a janela?',
+        showCancelButton: true,
+        confirmButtonText: 'Sim, Fechar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#d33', // Vermelho para confirmar saída
+        cancelButtonColor: '#3085d6'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Tenta fechar
+            window.close();
+            
+            // Hack antigo para tentar forçar em alguns navegadores
+            try {
+                window.open('', '_self', '');
+                window.close();
+            } catch (e) {}
+
+            // Se o navegador bloquear (muito provável), avisa o usuário após 1 segundo
+            setTimeout(() => {
+                if (!document.hidden) {
+                    Swal.fire({
+                        ...swalCommon,
+                        icon: 'info',
+                        title: 'Aviso',
+                        text: 'O navegador bloqueou o fechamento automático. Por favor, feche a aba manualmente.'
+                    });
+                }
+            }, 1000);
+        }
+    });
+});
