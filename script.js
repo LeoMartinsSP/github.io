@@ -32,15 +32,32 @@ const wheelSlots = [
     { label: "50", value: 50, color: "#ff0080", type: "money" }
 ];
 
-const wordDatabase = {
-    "ANIMAIS": ["ORNITORRINCO", "HIPOPOTAMO", "GIRAFA", "ELEFANTE", "CROCODILO", "GOLFINHO", "TARTARUGA", "AVESTRUZ", "CAMELO", "PINGUIM"],
-    "FRUTAS": ["JABUTICABA", "ABACAXI", "LARANJA", "MELANCIA", "MORANGO", "UVA", "BANANA", "KIWI", "PESSEGO", "MARACUJA"],
-    "PROFISSÃO": ["ENGENHEIRO", "MEDICO", "ADVOGADO", "PROFESSOR", "DENTISTA", "ARQUITETO", "JORNALISTA", "MOTORISTA", "ELETRICISTA", "PADEIRO"],
-    "PAÍS": ["ARGENTINA", "BRASIL", "ALEMANHA", "AUSTRALIA", "CANADA", "JAPAO", "MEXICO", "PORTUGAL", "ESPANHA", "ITALIA"],
-    "OBJETO": ["MICROONDAS", "GELADEIRA", "TELEVISAO", "COMPUTADOR", "CELULAR", "CADEIRA", "MESA", "LAMPADA", "ESPELHO", "RELOGIO"],
-    "INSTRUMENTO": ["VIOLONCELO", "GUITARRA", "BATERIA", "FLAUTA", "PIANO", "SAXOFONE", "TROMPETE", "VIOLINO", "HARPA", "SANFONA"],
-    "ESPORTE": ["BASQUETEBOL", "FUTEBOL", "VOLEI", "NATACAO", "JUDO", "TENIS", "GOLFE", "SURFE", "BOXE", "ATLETISMO"]
-};
+// ALTERAÇÃO: Removido objeto hardcoded e inicializado vazio
+let wordDatabase = {};
+
+// Carrega as palavras do arquivo JSON
+async function loadWords() {
+    try {
+        const response = await fetch('words.json');
+        if (!response.ok) {
+            throw new Error('Falha na rede ao carregar palavras');
+        }
+        wordDatabase = await response.json();
+        console.log("Banco de palavras carregado com sucesso!");
+    } catch (error) {
+        console.error("Erro ao carregar words.json:", error);
+        Swal.fire({
+            ...swalCommon,
+            icon: 'error',
+            title: 'Erro de Carregamento',
+            text: 'Não foi possível carregar as palavras. Verifique se está rodando em um servidor local (Live Server).',
+            footer: 'Erro: CORS / Arquivo não encontrado'
+        });
+    }
+}
+
+// Inicia o carregamento imediatamente
+loadWords();
 
 // ORDEM DE PRIORIDADE DO BOT
 const botPriorityList = ['A','E','O','S','R','N','D','M','I','U','T','C','L','P','V','G','Q','H','F','B','Z','J','X','K','W','Y'];
@@ -226,6 +243,22 @@ btn2Players.addEventListener('click', () => prepareGame(2));
 btnVsBot.addEventListener('click', () => prepareGame(3));
 
 async function prepareGame(mode) {
+    if (Object.keys(wordDatabase).length === 0) {
+        await Swal.fire({
+            ...swalCommon,
+            icon: 'warning',
+            title: 'Aguarde...',
+            text: 'Carregando banco de palavras.',
+            timer: 2000,
+            showConfirmButton: false
+        });
+        // Se ainda estiver vazio após o aviso, tenta carregar novamente ou aborta
+        if (Object.keys(wordDatabase).length === 0) {
+            loadWords(); // Tenta recarregar
+            return; 
+        }
+    }
+    
     numPlayers = (mode === 3) ? 2 : mode;
     isBotGame = (mode === 3);
     
