@@ -21,7 +21,7 @@ audioFx.win.volume = 0.3;
 audioFx.bg.volume = 0.03; // Volume bem baixo (5%)
 audioFx.bg.loop = true;   // Loop infinito
 
-audioFx.final.volume = 0.08; // Volume baixo, mas um pouco mais destacado (8%)
+audioFx.final.volume = 0.1; // Volume baixo, mas um pouco mais destacado (8%)
 audioFx.final.loop = true;
 
 // Hack para navegadores: O áudio só pode começar após uma interação do usuário.
@@ -470,7 +470,7 @@ function startRound() {
         Swal.fire({
             ...swalCommon,
             text: `${players[currentPlayerIndex].name}, é a sua vez de jogar!`,
-            timer: 4000, showConfirmButton: false, toast: true, 
+            timer: 3000, showConfirmButton: false, toast: true, 
             position: 'bottom',
             background: '#002266', color: '#fff',
             customClass: { popup: 'game-toast' }
@@ -719,7 +719,7 @@ function switchTurn() {
     Swal.fire({
         ...swalCommon,
         title: `VEZ DE ${players[currentPlayerIndex].name}`,
-        timer: 3500, showConfirmButton: false, toast: true, position: 'bottom',
+        timer: 2000, showConfirmButton: false, toast: true, position: 'bottom',
         background: '#003399',
         customClass: { popup: 'game-toast' }
     }).then(() => {
@@ -861,7 +861,7 @@ function handleGuess(letter) {
         Swal.fire({ 
             icon: 'error', 
             title: `Não tem "${letter}"!`, 
-            timer: 3500, 
+            timer: 3000, 
             showConfirmButton: false, 
             toast: true, 
             position: 'bottom', 
@@ -900,7 +900,7 @@ async function handleSolve() {
         html: inputsHtml,
         showCancelButton: true,
         confirmButtonText: 'Responder',
-        cancelButtonText: 'Cancelar', 
+        cancelButtonText: 'Não sei', 
         allowOutsideClick: false,
         customClass: { container: 'solve-popup-container', popup: 'compact-popup' },
         didOpen: () => {
@@ -1203,11 +1203,11 @@ function botFinalRoundLogic() {
     
     setTimeout(() => {
         revealFinalLetters(botFinalChoice);
-    }, 500);
+    }, 1000);
 
     setTimeout(() => {
         botFinalGuessLogic();
-    }, 6000); 
+    }, 8000); 
 }
 
 function botFinalGuessLogic() {
@@ -1325,9 +1325,19 @@ function revealFinalLetters(chosenLetters) {
     chosenLetters.forEach((letter, index) => {
         setTimeout(() => {
             const allText = currentPuzzle.words.join('');
+            
+            // Verifica se a letra existe na frase
             if (allText.includes(letter)) {
-                if(!guessedLetters.includes(letter)) { guessedLetters.push(letter); revealLetters(letter, false); }
+                if(!guessedLetters.includes(letter)) { 
+                    guessedLetters.push(letter); 
+                    revealLetters(letter, false); // Isso já marca o botão VERDE (correct)
+                }
+            } else {
+                // --- NOVO: SE NÃO TEM A LETRA, MARCA COMO ERRADO NO TECLADO ---
+                const btn = document.getElementById(`key-${letter}`);
+                if (btn) btn.classList.add('wrong');
             }
+            
         }, delay * (index + 1));
     });
     
