@@ -10,15 +10,15 @@ const audioFx = {
 };
 
 // Configurações de Volume e Loop
-audioFx.spin.volume = 0.2; 
+audioFx.spin.volume = 0.3; 
 audioFx.spin.loop = true;
 
-audioFx.correct.volume = 0.2; 
+audioFx.correct.volume = 0.4; 
 audioFx.wrong.volume = 0.1; 
-audioFx.win.volume = 0.2;
+audioFx.win.volume = 0.3;
 
 // Configuração das Músicas de Fundo
-audioFx.bg.volume = 0.05; // Volume bem baixo (5%)
+audioFx.bg.volume = 0.03; // Volume bem baixo (5%)
 audioFx.bg.loop = true;   // Loop infinito
 
 audioFx.final.volume = 0.08; // Volume baixo, mas um pouco mais destacado (8%)
