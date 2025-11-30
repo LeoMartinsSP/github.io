@@ -43,7 +43,7 @@ body {
     border: 2px solid #ffcc00; max-width: 90%;
 }
 .main-title { font-size: 3rem; color: #ffcc00; text-shadow: 3px 3px #d30000; margin-bottom: 40px; margin-top: 10px; }
-.menu-buttons { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 300px; margin: 0 auto; }
+.menu-buttons { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 380px; margin: 0 auto; }
 .btn-menu {
     padding: 20px; font-size: 1.5rem; font-weight: 900; color: white;
     background: linear-gradient(to bottom, #009933, #006622);
@@ -86,7 +86,7 @@ body {
     text-align: left;
 }
 .ranking-table tr:nth-child(even) { background-color: #f2f2f2; }
-.ranking-table tr:first-child td { font-weight: bold; color: #d30000; } /* Destaca o líder */
+.ranking-table tr:first-child td { font-weight: bold; color: #ffcc00; } /* Destaca o líder */
 
 .footer-note { margin-top: 30px; color: #bbb; font-size: 1rem; }
 
@@ -301,7 +301,14 @@ body {
     padding: 0.5rem !important;
     width: auto !important;
     min-width: 180px !important;
-    max-width: 220px !important; 
+    max-width: 220px !important;
+    /* Força posicionamento mais abaixo */
+    position: fixed !important; 
+    top: 60% !important; /* Move para a área azul */
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    z-index: 9999 !important;
 }
 .small-central-alert .swal2-title {
     font-size: 1.1rem !important;
