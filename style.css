@@ -588,3 +588,11 @@ body {
 .btn-edit-icon:active {
     transform: scale(0.9);
 }
+
+.btn-menu.close-mode {
+    background: linear-gradient(to bottom, #cc0000, #990000);
+    box-shadow: 0 6px 0 #660000;
+}
+.btn-menu.close-mode:active { 
+    box-shadow: 0 2px 0 #660000; 
+}
