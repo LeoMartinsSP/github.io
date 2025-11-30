@@ -24,16 +24,6 @@ audioFx.bg.loop = true;   // Loop infinito
 audioFx.final.volume = 0.1; // Volume baixo, mas um pouco mais destacado (8%)
 audioFx.final.loop = true;
 
-// Hack para navegadores: O áudio só pode começar após uma interação do usuário.
-// Adicionamos um listener no corpo da página para iniciar a música no primeiro clique.
-let musicStarted = false;
-document.body.addEventListener('click', () => {
-    if (!musicStarted && !isMuted) {
-        audioFx.bg.play().catch(e => console.log("Aguardando interação para áudio..."));
-        musicStarted = true;
-    }
-}, { once: true }); // Executa apenas uma vez
-
 const wheelSlots = [
     { label: "PERDE<br>TUDO", value: 0, color: "#000000", type: "bankruptcy" },
     { label: "1000", value: 1000, color: "#757575", type: "money" },
@@ -77,7 +67,7 @@ let wordDatabase = {
 
 async function loadWords() {
     try {
-        const response = await fetch('words.json');
+        const response = await fetch('words.json?t=${timestamp}');
         if (response.ok) {
             const jsonWords = await response.json();
             wordDatabase = jsonWords; 
@@ -1614,6 +1604,9 @@ function updatePlayerStats(name, moneyWon, isWin) {
 }
 
 function showRankingScreen() {
+    // PAUSA A MÚSICA AO ABRIR
+    if(!isMuted) audioFx.bg.pause();
+
     const ranking = getRankingData();
     
     // Ordena: Quem tem mais dinheiro primeiro. Critério de desempate: vitórias.
@@ -1623,7 +1616,13 @@ function showRankingScreen() {
     });
 
     if (ranking.length === 0) {
-        Swal.fire({ ...swalCommon, title: 'RANKING VAZIO', text: 'Jogue para aparecer aqui!', icon: 'info' });
+        Swal.fire({ 
+            ...swalCommon, 
+            title: 'RANKING VAZIO', 
+            text: 'Jogue para aparecer aqui!', 
+            icon: 'info'
+            // REMOVIDO: O comando didClose que religava a música
+        });
         return;
     }
 
@@ -1661,6 +1660,7 @@ function showRankingScreen() {
         title: '🏆 SALA DA FAMA',
         html: htmlTable,
         width: 600
+        // REMOVIDO: O comando didClose que religava a música
     });
 }
 
