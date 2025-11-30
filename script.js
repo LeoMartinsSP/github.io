@@ -106,7 +106,8 @@ let isFinalRound = false;
 let isTieBreaker = false;
 let tieBreakerState = { p1Val: 0, p2Val: 0, turns: 0 };
 let finalistPlayer = null;
-let isProcessingGuess = false; 
+let isProcessingGuess = false;
+let previousRoundWinnerIndex = 0;
 
 // ELEMENTOS DOM
 const startScreen = document.getElementById('start-screen');
@@ -430,6 +431,27 @@ function generatePuzzle(forceSingle = false) {
 }
 
 function startRound() {
+    // --- NOVO: LÓGICA DE QUEM COMEÇA ---
+    if (numPlayers === 1) {
+        currentPlayerIndex = 0;
+    } else {
+        // Modo 2 Jogadores ou Bot
+        if (currentRound === 1) {
+            // Rodada 1: Sempre Jogador 1
+            currentPlayerIndex = 0;
+        } else if (currentRound === 2) {
+            // Rodada 2: Sempre Jogador 2 (ou Bot)
+            currentPlayerIndex = 1;
+        } else if (currentRound === 3) {
+            // Rodada 3: Quem venceu a Rodada 2 começa
+            // (Nota: Se ninguém venceu a R2 - ex: limite de erros no single player, 
+            // mantém o padrão, mas no multiplayer alguém sempre vence ou empata, 
+            // aqui assumimos o vencedor registrado).
+            currentPlayerIndex = previousRoundWinnerIndex;
+        }
+    }
+    // -----------------------------------
+
     currentPuzzle = generatePuzzle(false);
     guessedLetters = [];
     players[0].roundScore = 0; players[1].roundScore = 0;
@@ -456,11 +478,12 @@ function startRound() {
     disableKeyboard(true); 
     sliderCanSpin = true; 
 
+    // Alerta de Início de Rodada
     setTimeout(() => {
         Swal.fire({
             ...swalCommon,
             text: `${players[currentPlayerIndex].name}, é a sua vez de jogar!`,
-            timer: 3000, showConfirmButton: false, toast: true, 
+            timer: 2000, showConfirmButton: false, toast: true, 
             position: 'bottom',
             background: '#002266', color: '#fff',
             customClass: { popup: 'game-toast' }
@@ -979,6 +1002,11 @@ function checkWinCondition() {
     if (allGuessed) {
         playSound('win');
         players[currentPlayerIndex].totalScore += players[currentPlayerIndex].roundScore;
+        
+        // --- NOVO: SALVA QUEM VENCEU A RODADA ATUAL ---
+        previousRoundWinnerIndex = currentPlayerIndex; 
+        // ----------------------------------------------
+
         updateScoreUI();
         setTimeout(() => {
             Swal.fire({
